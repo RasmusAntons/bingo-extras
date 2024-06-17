@@ -5,4 +5,7 @@ import dev.xpple.betterconfig.api.Config;
 public class Configs {
     @Config
     public static boolean spectatorsGenerateLoot = false;
+
+    @Config
+    public static boolean createFantasyLobby = false;
 }

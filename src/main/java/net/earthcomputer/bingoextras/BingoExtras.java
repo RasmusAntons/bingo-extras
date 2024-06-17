@@ -5,6 +5,7 @@ import dev.xpple.betterconfig.api.ModConfigBuilder;
 import net.earthcomputer.bingoextras.command.BingoExtrasCommands;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
@@ -15,6 +16,11 @@ public class BingoExtras implements ModInitializer {
     public void onInitialize() {
         CommandRegistrationCallback.EVENT.register((dispatcher, context, environment) -> BingoExtrasCommands.register(dispatcher, context));
         new ModConfigBuilder("bingoextras", Configs.class).build();
+
+        if (Configs.createFantasyLobby) {
+            ServerLifecycleEvents.SERVER_STARTED.register(FantasyLobby::onStartup);
+        }
+
     }
 
     public static MutableComponent translatable(@Translatable String translationKey) {
