@@ -7,6 +7,7 @@ import net.earthcomputer.bingoextras.command.FullBrightCommand;
 import net.earthcomputer.bingoextras.ext.ServerPlayerExt;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.network.chat.Component;
@@ -23,6 +24,11 @@ public class BingoExtras implements ModInitializer {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> FullBrightCommand.sendUpdate(handler.player, true));
         ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> FullBrightCommand.sendUpdate(newPlayer, true));
         ServerPlayerEvents.COPY_FROM.register((oldPlayer, newPlayer, alive) -> ServerPlayerExt.setFullbright(newPlayer, ServerPlayerExt.isFullbright(oldPlayer)));
+
+        if (Configs.createFantasyLobby) {
+            ServerLifecycleEvents.SERVER_STARTED.register(FantasyLobby::onStartup);
+        }
+
     }
 
     public static MutableComponent translatable(@Translatable String translationKey) {
