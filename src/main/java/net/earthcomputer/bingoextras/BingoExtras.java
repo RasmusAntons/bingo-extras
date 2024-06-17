@@ -8,6 +8,7 @@ import net.earthcomputer.bingoextras.ext.ServerPlayerExt;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.network.chat.Component;
@@ -28,7 +29,8 @@ public class BingoExtras implements ModInitializer {
         if (Configs.createFantasyLobby) {
             ServerLifecycleEvents.SERVER_STARTED.register(FantasyLobby::onStartup);
         }
-
+        ServerLifecycleEvents.SERVER_STARTED.register(FreezePeriod::onStartup);
+        ServerTickEvents.START_SERVER_TICK.register(FreezePeriod::onTick);
     }
 
     public static MutableComponent translatable(@Translatable String translationKey) {
