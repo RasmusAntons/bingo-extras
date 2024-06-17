@@ -17,6 +17,7 @@ public final class BingoExtrasCommands {
         SetEntityValCommand.register(dispatcher);
         SetStatCommand.register(dispatcher, context);
         TeamSpawnPointCommand.register(dispatcher);
+        FreezePlayersCommand.register(dispatcher);
 
         if (FabricLoader.getInstance().isModLoaded("fantasy")) {
             BingoSpreadPlayers4dCommand.register(dispatcher, context);

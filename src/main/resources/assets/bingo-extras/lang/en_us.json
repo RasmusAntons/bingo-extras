@@ -1,6 +1,8 @@
 {
   "bingo_extras.bingospreadplayers.failedToSpread": "Failed to spread players",
   "bingo_extras.bingospreadplayers.success": "Successfully spread players",
+  "bingo_extras.freeze.success": "Froze players for %d seconds",
+  "bingo_extras.freeze.time": "%d s",
   "bingo_extras.clearspawnpoint.success": "Cleared your spawn point",
   "bingo_extras.fullbright.notLivingEntity": "%s is not a living entity",
   "bingo_extras.fullbright.success": "Toggled fullbright",
