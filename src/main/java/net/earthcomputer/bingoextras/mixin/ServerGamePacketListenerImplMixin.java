@@ -18,10 +18,14 @@ public abstract class ServerGamePacketListenerImplMixin {
     @Shadow
     public abstract void teleport(double d, double e, double f, float g, float h);
 
-    @Inject(method = "handleMovePlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;containsInvalidValues(DDDFF)Z"), cancellable = true)
-    private void onMovePlayer(ServerboundMovePlayerPacket serverboundMovePlayerPacket, CallbackInfo ci) {
-        if (FreezePeriod.INSTANCE.isInFreezePeriod(this.player)) {
+    @Shadow
+    private boolean clientIsFloating;
+
+    @Inject(method = "handleMovePlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;isPassenger()Z"), cancellable = true)
+    private void onMovePlayer(ServerboundMovePlayerPacket packet, CallbackInfo ci) {
+        if (!this.clientIsFloating && !(this.player.isChangingDimension()) && FreezePeriod.INSTANCE.isInFreezePeriod(this.player)) {
             teleport(this.player.getX(), this.player.getY(), this.player.getZ(), this.player.getYRot(), this.player.getXRot());
+            this.player.serverLevel().getChunkSource().move(this.player);
             ci.cancel();
         }
     }

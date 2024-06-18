@@ -1,6 +1,5 @@
 package net.earthcomputer.bingoextras;
 
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -32,6 +31,8 @@ public class FreezePeriod {
                 if (time % 20 == 0) {
                     ServerPlayer player = minecraftServer.getPlayerList().getPlayer(id);
                     if (player != null) {
+                        if (player.gameMode.getGameModeForPlayer() != GameType.ADVENTURE)
+                            player.setGameMode(GameType.ADVENTURE);
                         player.connection.send(new ClientboundSetActionBarTextPacket(BingoExtras.translatable("bingo_extras.freeze.time", time / 20)));
                         if (time <= 100) {
                             player.playNotifySound((time == 0) ? SoundEvents.BELL_BLOCK : SoundEvents.LEVER_CLICK, SoundSource.MASTER, 0.5f, 1f);
