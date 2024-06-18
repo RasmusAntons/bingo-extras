@@ -1,17 +1,11 @@
-$bingo start --gamemode lockout --allow-never-goals-in-lockout --size $(size) --difficulty $(difficulty) --require-client --continue-after-win red orange blue green yellow pink purple black white
+$bingo start --gamemode lockout --allow-never-goals-in-lockout --size $(size) --difficulty $(difficulty) --require-client green pink
 $execute if predicate bingo:$(consistent) run bingospreadplayers4d 0 0 500 @a[gamemode=!spectator] #bingo:excluded
-$execute unless predicate bingo:$(consistent) run bingospreadplayers 0 0 500 1000 $(respect_teams) @a[gamemode=!spectator] $(same_biomes) #bingo:excluded
+$execute unless predicate bingo:$(consistent) in minecraft:overworld run spreadplayers 0 0 1000 550 $(respect_teams) @a[gamemode=!spectator]
 execute as @a[gamemode=!spectator] run clearspawnpoint
-$execute at @p[gamemode=!spectator,team=red] run function bingo:init_team {team: "red", bonus_chest: "$(bonus_chest)", seed: $(seed), consistent: "$(consistent)"}
-$execute at @p[gamemode=!spectator,team=orange] run function bingo:init_team {team: "orange", bonus_chest: "$(bonus_chest)", seed: $(seed), consistent: "$(consistent)"}
 $execute at @p[gamemode=!spectator,team=green] run function bingo:init_team {team: "green", bonus_chest: "$(bonus_chest)", seed: $(seed), consistent: "$(consistent)"}
-$execute at @p[gamemode=!spectator,team=blue] run function bingo:init_team {team: "blue", bonus_chest: "$(bonus_chest)", seed: $(seed), consistent: "$(consistent)"}
-$execute at @p[gamemode=!spectator,team=yellow] run function bingo:init_team {team: "yellow", bonus_chest: "$(bonus_chest)", seed: $(seed), consistent: "$(consistent)"}
 $execute at @p[gamemode=!spectator,team=pink] run function bingo:init_team {team: "pink", bonus_chest: "$(bonus_chest)", seed: $(seed), consistent: "$(consistent)"}
-$execute at @p[gamemode=!spectator,team=purple] run function bingo:init_team {team: "purple", bonus_chest: "$(bonus_chest)", seed: $(seed), consistent: "$(consistent)"}
-$execute at @p[gamemode=!spectator,team=black] run function bingo:init_team {team: "black", bonus_chest: "$(bonus_chest)", seed: $(seed), consistent: "$(consistent)"}
-$execute at @p[gamemode=!spectator,team=white] run function bingo:init_team {team: "white", bonus_chest: "$(bonus_chest)", seed: $(seed), consistent: "$(consistent)"}
 freezeplayers @a[gamemode=!spectator] 90
+gamerule givePlayerTracker true
 time set 0
 weather rain 1
 clear @a[gamemode=!spectator]
