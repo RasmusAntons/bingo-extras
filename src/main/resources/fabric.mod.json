@@ -30,7 +30,7 @@
   "depends": {
     "minecraft": "${minecraft_version}",
     "fabricloader": ">=0.15.11",
-    "bingo": "1.1.9",
+    "bingo": "1.1.10",
     "fabric": ">=0.100.0"
   }
 }

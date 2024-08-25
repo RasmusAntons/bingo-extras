@@ -11,6 +11,7 @@ public final class BingoExtrasCommands {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context) {
         BingoSpreadPlayersCommand.register(dispatcher, context);
+        BingoSpreadPlayersSeedfindCommand.register(dispatcher, context);
         ClearSpawnPointCommand.register(dispatcher);
         FullBrightCommand.register(dispatcher);
         PlaceBonusChestCommand.register(dispatcher, context);
