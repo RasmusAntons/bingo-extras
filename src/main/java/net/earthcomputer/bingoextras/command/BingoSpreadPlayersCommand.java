@@ -145,7 +145,7 @@ public final class BingoSpreadPlayersCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static List<List<Entity>> groupEntities(Collection<? extends Entity> entities, boolean respectTeams) {
+    protected static List<List<Entity>> groupEntities(Collection<? extends Entity> entities, boolean respectTeams) {
         List<List<Entity>> groups = new ArrayList<>();
         if (respectTeams) {
             Map<PlayerTeam, List<Entity>> entitiesByTeam = new HashMap<>();
