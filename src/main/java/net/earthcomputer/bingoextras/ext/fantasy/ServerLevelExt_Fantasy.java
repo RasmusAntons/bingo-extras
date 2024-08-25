@@ -16,6 +16,11 @@ public interface ServerLevelExt_Fantasy {
     void bingoExtras$setOriginalLevel(@Nullable ServerLevel level);
 
     @Nullable
+    ServerLevel bingoExtras$getParentLevel();
+
+    void bingoExtras$setParentLevel(@Nullable ServerLevel level);
+
+    @Nullable
     static PlayerTeam getTeam(ServerLevel level) {
         return ((ServerLevelExt_Fantasy) level).bingoExtras$getTeam();
     }
@@ -23,6 +28,11 @@ public interface ServerLevelExt_Fantasy {
     @Nullable
     static ServerLevel getOriginalLevel(ServerLevel level) {
         return ((ServerLevelExt_Fantasy) level).bingoExtras$getOriginalLevel();
+    }
+
+    @Nullable
+    static ServerLevel getParentLevel(ServerLevel level) {
+        return ((ServerLevelExt_Fantasy) level).bingoExtras$getParentLevel();
     }
 
     static void initializeTeam(ServerLevel level, @Nullable PlayerTeam team, @Nullable ServerLevel originalLevel) {

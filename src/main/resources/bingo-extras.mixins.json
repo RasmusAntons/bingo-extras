@@ -13,6 +13,7 @@
     "ServerGamePacketListenerImplMixin",
     "bingo.BingoCommandMixin",
     "bingo.DistanceFromSpawnConditionMixin",
+    "bingo.BingoGameMixin",
     "fantasy.ChangeDimensionTriggerInstanceMixin",
     "fantasy.ChangeDimensionTriggerMixin",
     "fantasy.EntityMixin",

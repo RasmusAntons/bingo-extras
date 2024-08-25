@@ -1,7 +1,10 @@
 package net.earthcomputer.bingoextras;
 
+import io.github.gaming32.bingo.game.BingoGame;
+import net.earthcomputer.bingoextras.ext.BingoGameExt;
 import net.earthcomputer.bingoextras.ext.fantasy.PlayerTeamExt_Fantasy;
 import net.earthcomputer.bingoextras.ext.fantasy.ServerLevelExt_Fantasy;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -27,6 +30,10 @@ public final class FantasyUtil {
             return teamDimension;
         }
         ServerLevel teamLevel = Objects.requireNonNull(server.getLevel(teamDimension), () -> "Could not find server level for dimension " + teamDimension);
+        ServerLevel parentLevel = ServerLevelExt_Fantasy.getOriginalLevel(teamLevel);
+        if (parentLevel != null) {
+            return parentLevel.dimension();
+        }
         ServerLevel originalLevel = ServerLevelExt_Fantasy.getOriginalLevel(teamLevel);
         if (originalLevel != null) {
             return originalLevel.dimension();
@@ -38,6 +45,10 @@ public final class FantasyUtil {
     public static Level originalLevelOrSelf(Level level) {
         if (!(level instanceof ServerLevel serverLevel)) {
             return level;
+        }
+        ServerLevel parentLevel = ServerLevelExt_Fantasy.getParentLevel(serverLevel);
+        if (parentLevel != null) {
+            return parentLevel;
         }
         ServerLevel originalLevel = ServerLevelExt_Fantasy.getOriginalLevel(serverLevel);
         return originalLevel != null ? originalLevel : level;
@@ -76,5 +87,18 @@ public final class FantasyUtil {
 
     public static boolean isForcedDimensionChange() {
         return isForcedDimensionChange.get();
+    }
+
+    public static void destroyGameSpecificLevels(BingoGame game) {
+        var gameSpecificLevels = ((BingoGameExt) game).bingoExtras$getGameSpecificLevels();
+        for (RuntimeWorldHandle handle : gameSpecificLevels.values()) {
+            for (ServerPlayer player : new ArrayList<>(handle.asWorld().players())) {
+                ServerLevel overworld = player.getServer().overworld();
+                BlockPos spawnPos = overworld.getSharedSpawnPos();
+                player.teleportTo(overworld, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), player.getYRot(), player.getXRot());
+            }
+            handle.delete();
+        }
+        gameSpecificLevels.clear();
     }
 }

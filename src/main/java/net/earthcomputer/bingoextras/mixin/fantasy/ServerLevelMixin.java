@@ -31,6 +31,10 @@ public class ServerLevelMixin implements ServerLevelExt_Fantasy {
     @Nullable
     private ServerLevel originalLevel = null;
 
+    @Unique
+    @Nullable
+    private ServerLevel parentLevel = null;
+
     @Override
     @Nullable
     public PlayerTeam bingoExtras$getTeam() {
@@ -48,9 +52,21 @@ public class ServerLevelMixin implements ServerLevelExt_Fantasy {
         return originalLevel;
     }
 
+
     @Override
     public void bingoExtras$setOriginalLevel(@Nullable ServerLevel level) {
         this.originalLevel = level;
+    }
+
+    @Override
+    @Nullable
+    public ServerLevel bingoExtras$getParentLevel() {
+        return parentLevel;
+    }
+
+    @Override
+    public void bingoExtras$setParentLevel(@Nullable ServerLevel level) {
+        this.parentLevel = level;
     }
 
     @Inject(method = "advanceWeatherCycle", at = @At(value = "FIELD", target = "Lnet/minecraft/server/level/ServerLevel;oThunderLevel:F", ordinal = 0))
