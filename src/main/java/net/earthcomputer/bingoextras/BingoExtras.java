@@ -26,9 +26,6 @@ public class BingoExtras implements ModInitializer {
         ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> FullBrightCommand.sendUpdate(newPlayer, true));
         ServerPlayerEvents.COPY_FROM.register((oldPlayer, newPlayer, alive) -> ServerPlayerExt.setFullbright(newPlayer, ServerPlayerExt.isFullbright(oldPlayer)));
 
-        if (Configs.createFantasyLobby) {
-            ServerLifecycleEvents.SERVER_STARTED.register(FantasyLobby::onStartup);
-        }
         ServerLifecycleEvents.SERVER_STARTED.register(FreezePeriod::onStartup);
         ServerTickEvents.START_SERVER_TICK.register(FreezePeriod::onTick);
     }
