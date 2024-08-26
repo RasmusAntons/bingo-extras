@@ -32,7 +32,7 @@ dependencies {
     include modImplementation('com.github.Chocohead:Fabric-ASM:v2.3')
     modImplementation files('libs/fantasy-0.6.3+1.21.jar')
     modImplementation files('libs/bingo-1.1.10+enigmatics+fabric.jar')
-    include implementation("de.rasmusantons.cubiomes:cubiomes-java:0.0.2")
+    include implementation("de.rasmusantons.cubiomes:cubiomes-java:0.0.4")
 
     compileOnly 'com.demonwav.mcdev:annotations:2.1.0'
 }

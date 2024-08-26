@@ -100,5 +100,6 @@ public final class FantasyUtil {
             handle.delete();
         }
         gameSpecificLevels.clear();
+        ((BingoGameExt) game).bingo_extras$setGameSpecificWorldSeed(0L);
     }
 }
