@@ -3,6 +3,8 @@
   "bingo_extras.bingospreadplayers.failedToFindSeed": "Failed to find a suitable seed",
   "bingo_extras.bingospreadplayers.noRunningGame": "No running game",
   "bingo_extras.bingospreadplayers.success": "Successfully spread players",
+  "bingo_extras.bingospreadplayers.seedfind_biomes": "These biomes are within %d blocks from 0 0 in the %s:",
+  "bingo_extras.bingospreadplayers.seedfind_biome": "\n  - %s",
   "bingo_extras.freeze.success": "Froze players for %d seconds",
   "bingo_extras.freeze.time": "%d s",
   "bingo_extras.clearspawnpoint.success": "Cleared your spawn point",
