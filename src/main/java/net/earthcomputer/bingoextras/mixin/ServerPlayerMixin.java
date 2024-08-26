@@ -4,7 +4,6 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.authlib.GameProfile;
 import io.github.gaming32.bingo.Bingo;
 import net.earthcomputer.bingoextras.Configs;
-import net.earthcomputer.bingoextras.FantasyLobby;
 import net.earthcomputer.bingoextras.ext.PlayerTeamExt;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
@@ -53,11 +52,6 @@ public abstract class ServerPlayerMixin extends Player {
 
     @ModifyExpressionValue(method = "findRespawnPositionAndUseSpawnBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;overworld()Lnet/minecraft/server/level/ServerLevel;"))
     private ServerLevel respawnTeamInDimension(ServerLevel original) {
-        if (Configs.createFantasyLobby && Bingo.activeGame == null) {
-            FantasyLobby lobby = FantasyLobby.INSTANCE;
-            return lobby.getWorld();
-        }
-
         PlayerTeam team = this.getTeam();
         if (team != null) {
             GlobalPos respawnPos = PlayerTeamExt.getTeamSpawnPos(team);

@@ -5,7 +5,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.earthcomputer.bingoextras.BingoExtras;
-import net.earthcomputer.bingoextras.Configs;
 import net.minecraft.Util;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -102,7 +101,7 @@ public final class BingoSpreadPlayersCommand {
 
         Holder<Biome> chosenBiome = null;
 
-        ServerLevel level = Configs.createFantasyLobby ? source.getServer().overworld() : source.getLevel();
+        ServerLevel level = source.getLevel();
         for (int i = 0; i < spreadPoints.size(); i++) {
             Vector2d point = spreadPoints.get(i);
             while (true) {

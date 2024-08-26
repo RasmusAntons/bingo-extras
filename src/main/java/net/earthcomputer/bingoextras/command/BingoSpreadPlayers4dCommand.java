@@ -3,7 +3,6 @@ package net.earthcomputer.bingoextras.command;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.earthcomputer.bingoextras.Configs;
 import net.earthcomputer.bingoextras.ext.fantasy.PlayerTeamExt_Fantasy;
 import net.earthcomputer.bingoextras.ext.fantasy.ServerLevelExt_Fantasy;
 import net.minecraft.commands.CommandBuildContext;
@@ -57,7 +56,7 @@ public final class BingoSpreadPlayers4dCommand {
         Collection<? extends Entity> entities,
         Predicate<Holder<Biome>> excludedBiomes
     ) throws CommandSyntaxException {
-        ServerLevel level = Configs.createFantasyLobby ? source.getServer().overworld() : source.getLevel();
+        ServerLevel level = source.getLevel();
         RandomSource rand = RandomSource.create();
         for (int attempt = 0; attempt < 100; attempt++) {
             double relX;

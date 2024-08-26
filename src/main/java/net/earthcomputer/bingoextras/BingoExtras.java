@@ -18,9 +18,6 @@ public class BingoExtras implements ModInitializer {
         CommandRegistrationCallback.EVENT.register((dispatcher, context, environment) -> BingoExtrasCommands.register(dispatcher, context));
         new ModConfigBuilder("bingoextras", Configs.class).build();
 
-        if (Configs.createFantasyLobby) {
-            ServerLifecycleEvents.SERVER_STARTED.register(FantasyLobby::onStartup);
-        }
         ServerLifecycleEvents.SERVER_STARTED.register(FreezePeriod::onStartup);
         ServerTickEvents.START_SERVER_TICK.register(FreezePeriod::onTick);
     }
