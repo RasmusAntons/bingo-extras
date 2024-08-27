@@ -1,6 +1,5 @@
 package net.earthcomputer.bingoextras.ext;
 
-import com.google.common.base.Preconditions;
 import io.github.gaming32.bingo.game.BingoGame;
 import net.earthcomputer.bingoextras.ext.fantasy.ServerLevelExt_Fantasy;
 import net.minecraft.network.chat.Component;
@@ -34,12 +33,12 @@ public interface BingoGameExt {
             ServerLevel parentLevel = Objects.requireNonNull(server.getLevel(dimension), () -> "No server level associated with " + dimension);
             RuntimeWorldHandle handle = Fantasy.get(server).openTemporaryWorld(
                     new RuntimeWorldConfig()
-                            .setDimensionType(BuiltinDimensionTypes.OVERWORLD)
+                            .setDimensionType(parentLevel.dimensionTypeRegistration())
                             .setDifficulty(Difficulty.NORMAL)
                             .setGenerator(parentLevel.getChunkSource().getGenerator())
                             .setSeed(((BingoGameExt) game).bingo_extras$getGameSpecificWorldSeed())
                             .setShouldTickTime(true)
-                            .setMirrorOverworldGameRules(false)
+                            .setMirrorOverworldGameRules(true)
                             .setTimeOfDay(0)
             );
             ((ServerLevelExt_Fantasy) handle.asWorld()).bingoExtras$setParentLevel(parentLevel);
