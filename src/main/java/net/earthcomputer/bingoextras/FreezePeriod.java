@@ -25,7 +25,7 @@ public class FreezePeriod {
         if (INSTANCE != null) {
             ArrayList<UUID> unfreezePlayers = new ArrayList<>();
             INSTANCE.frozenPlayers.replaceAll((id, time) -> {
-                if (--time == 0) {
+                if (--time <= 0) {
                     unfreezePlayers.add(id);
                 }
                 if (time % 20 == 0) {
@@ -46,6 +46,9 @@ public class FreezePeriod {
                 if (player != null)
                     player.setGameMode(GameType.SURVIVAL);
                 INSTANCE.frozenPlayers.remove(id);
+            }
+            if (INSTANCE.frozenPlayers.isEmpty() && minecraftServer.tickRateManager().isFrozen()) {
+                minecraftServer.tickRateManager().setFrozen(false);
             }
         }
     }

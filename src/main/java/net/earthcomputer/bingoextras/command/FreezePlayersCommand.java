@@ -12,6 +12,8 @@ import java.util.Collection;
 
 import static com.mojang.brigadier.arguments.DoubleArgumentType.doubleArg;
 import static com.mojang.brigadier.arguments.DoubleArgumentType.getDouble;
+import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
+import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 import static net.minecraft.commands.arguments.EntityArgument.getPlayers;
@@ -26,15 +28,22 @@ public final class FreezePlayersCommand {
                 .requires(source -> source.hasPermission(2))
                 .then(argument("targets", players())
                         .then(argument("time", doubleArg(0))
-                                .executes(ctx -> freezePlayers(ctx.getSource(), getPlayers(ctx, "targets"), getDouble(ctx, "time")))
-                        )));
+                                .then(argument("tickFreeze", bool())
+                                        .executes(ctx -> freezePlayers(
+                                                ctx.getSource(),
+                                                getPlayers(ctx, "targets"),
+                                                getDouble(ctx, "time"),
+                                                getBool(ctx, "tickFreeze")
+                                        ))
+        ))));
     }
 
-    private static int freezePlayers(CommandSourceStack source, Collection<ServerPlayer> players, double time) {
+    private static int freezePlayers(CommandSourceStack source, Collection<ServerPlayer> players, double time, boolean tickFreeze) {
         for (ServerPlayer player : players) {
             player.setGameMode(GameType.ADVENTURE);
             FreezePeriod.INSTANCE.setFreezePeriod(player, time);
         }
+        source.getServer().tickRateManager().setFrozen(true);
         source.sendSuccess(() -> BingoExtras.translatable("bingo_extras.freeze.success", time), true);
         return Command.SINGLE_SUCCESS;
     }

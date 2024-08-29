@@ -4,7 +4,7 @@ $execute unless predicate bingo:$(consistent) in minecraft:overworld run bingosp
 execute as @a[gamemode=!spectator] run clearspawnpoint
 $execute at @p[gamemode=!spectator,team=green] run function bingo:init_team {team: "green", bonus_chest: "$(bonus_chest)", seed: $(seed), consistent: "$(consistent)"}
 $execute at @p[gamemode=!spectator,team=pink] run function bingo:init_team {team: "pink", bonus_chest: "$(bonus_chest)", seed: $(seed), consistent: "$(consistent)"}
-freezeplayers @a[gamemode=!spectator] 90
+freezeplayers @a[gamemode=!spectator] 90 true
 gamerule givePlayerTracker true
 time set 0
 weather rain 1
