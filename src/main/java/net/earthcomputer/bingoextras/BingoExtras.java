@@ -2,6 +2,7 @@ package net.earthcomputer.bingoextras;
 
 import com.demonwav.mcdev.annotations.Translatable;
 import dev.xpple.betterconfig.api.ModConfigBuilder;
+import io.github.gaming32.bingo.game.BingoGame;
 import net.earthcomputer.bingoextras.command.BingoExtrasCommands;
 import net.earthcomputer.bingoextras.command.FullBrightCommand;
 import net.earthcomputer.bingoextras.ext.ServerPlayerExt;
@@ -17,6 +18,8 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.TranslatableContents;
 
 public class BingoExtras implements ModInitializer {
+    public static BingoGame seedfindGame = null;
+
     @Override
     public void onInitialize() {
         CommandRegistrationCallback.EVENT.register((dispatcher, context, environment) -> BingoExtrasCommands.register(dispatcher, context));

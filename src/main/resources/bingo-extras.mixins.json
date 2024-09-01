@@ -13,6 +13,7 @@
     "bingo.DistanceFromSpawnConditionMixin",
     "bingo.GameModeCommandMixin",
     "bingo.BingoGameMixin",
+    "bingo.BingoCommandMixin",
     "fantasy.ChangeDimensionTriggerInstanceMixin",
     "fantasy.ChangeDimensionTriggerMixin",
     "fantasy.EntityMixin",
