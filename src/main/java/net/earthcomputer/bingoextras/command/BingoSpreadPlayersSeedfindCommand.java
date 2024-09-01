@@ -97,9 +97,10 @@ public class BingoSpreadPlayersSeedfindCommand {
         if (activeGame == null) {
             throw NO_RUNNING_GAME_EXCEPTION.create();
         }
-        if (((BingoGameExt) activeGame).bingo_extras$getGameSpecificWorldSeed() != 0) {
-            FantasyUtil.destroyGameSpecificLevels(activeGame);
+        if (BingoExtras.seedfindGame != null) {
+            FantasyUtil.destroyGameSpecificLevels(BingoExtras.seedfindGame);
         }
+        BingoExtras.seedfindGame = activeGame;
         ((BingoGameExt) activeGame).bingo_extras$getExtraMessages().clear();
 
         RandomSource rand = RandomSource.create();

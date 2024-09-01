@@ -49,11 +49,4 @@ public class BingoGameMixin implements BingoGameExt {
     public Map<ResourceKey<Level>, RuntimeWorldHandle> bingoExtras$getGameSpecificLevels() {
         return gameSpecificLevels;
     }
-
-    @Inject(method = "endGame", at = @At(value = "RETURN"))
-    private void endGame(CallbackInfo ci) {
-        if (gameSpecificWorldSeed != 0) {
-            FantasyUtil.destroyGameSpecificLevels((BingoGame) (Object) this);
-        }
-    }
 }
