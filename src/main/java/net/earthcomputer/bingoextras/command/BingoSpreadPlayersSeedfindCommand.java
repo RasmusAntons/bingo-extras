@@ -198,7 +198,7 @@ public class BingoSpreadPlayersSeedfindCommand {
                     for (Map.Entry<ResourceKey<DimensionType>, Dimension> entry : dimensions.entrySet()) {
                         Set<Holder<Biome>> biomesForDimension = requiredBiomes.get(entry.getKey());
                         if (!biomesForDimension.isEmpty()) {
-                            Range r = new Range(16, -rChunks, -rChunks, 2 * rChunks, rChunks, 60);
+                            Range r = new Range(16, -rChunks, -rChunks, 2 * rChunks, 2 * rChunks, 60);
                             BiomeID[] requiredBiomeIDs = biomesForDimension.stream().map(CubiomesUtils::biomeToBiomeID).toArray(BiomeID[]::new);
                             BiomeFilter filter = BiomeFilter.Builder.with().allOf(requiredBiomeIDs).build();
                             boolean hasBiomes = cubiomes.checkForBiomes(r, entry.getValue(), seed, filter);
