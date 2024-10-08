@@ -64,6 +64,14 @@ public abstract class EntityMixin {
         if (!FantasyUtil.isForcedDimensionChange() && currentLevelTeam != null && destLevelTeam == null) {
             dest = PlayerTeamExt_Fantasy.getTeamSpecificLevel(getServer(), currentLevelTeam, dest.dimension());
         }
+        if (Bingo.activeGame != null && ((BingoGameExt) Bingo.activeGame).bingo_extras$getGameSpecificWorldSeed() != 0) {
+            ResourceKey<Level> dimension = dest.dimension();
+            var parentLevel = ((ServerLevelExt_Fantasy) dest).bingoExtras$getParentLevel();
+            if (parentLevel != null) {
+                dimension = parentLevel.dimension();
+            }
+            dest = BingoGameExt.getGameSpecificLevel(dest.getServer(), Bingo.activeGame, dimension);
+        }
         return dest;
     }
 }

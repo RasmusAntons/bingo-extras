@@ -30,7 +30,7 @@ public final class FantasyUtil {
             return teamDimension;
         }
         ServerLevel teamLevel = Objects.requireNonNull(server.getLevel(teamDimension), () -> "Could not find server level for dimension " + teamDimension);
-        ServerLevel parentLevel = ServerLevelExt_Fantasy.getOriginalLevel(teamLevel);
+        ServerLevel parentLevel = ServerLevelExt_Fantasy.getParentLevel(teamLevel);
         if (parentLevel != null) {
             return parentLevel.dimension();
         }

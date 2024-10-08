@@ -2,9 +2,8 @@ package net.earthcomputer.bingoextras.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.authlib.GameProfile;
-import io.github.gaming32.bingo.Bingo;
-import net.earthcomputer.bingoextras.Configs;
 import net.earthcomputer.bingoextras.ext.PlayerTeamExt;
+import net.earthcomputer.bingoextras.ext.fantasy.ServerLevelExt_Fantasy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.server.MinecraftServer;
@@ -12,6 +11,7 @@ import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.scores.PlayerTeam;
 import org.spongepowered.asm.mixin.Mixin;
@@ -47,6 +47,17 @@ public abstract class ServerPlayerMixin extends Player {
             }
         }
 
+        return original;
+    }
+
+    @ModifyExpressionValue(method="adjustSpawnLocation", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/storage/WorldData;getGameType()Lnet/minecraft/world/level/GameType;"))
+    private GameType overwriteDefaultGameType(GameType original) {
+        if (this.level() instanceof ServerLevel serverLevel) {
+            ServerLevelExt_Fantasy originalExt = (ServerLevelExt_Fantasy) serverLevel;
+            if (originalExt.bingoExtras$getOriginalLevel() != null || originalExt.bingoExtras$getParentLevel() != null) {
+                return GameType.SURVIVAL;
+            }
+        }
         return original;
     }
 
