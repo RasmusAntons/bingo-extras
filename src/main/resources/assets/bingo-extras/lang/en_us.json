@@ -16,5 +16,7 @@
   "bingo_extras.setentityval.saturation.success": "Set the saturation of %s players to %s",
   "bingo_extras.setstat.success": "Set stat %s of %s players to %s",
   "bingo_extras.teamspawnpoint.clear.success": "Cleared the spawn point of team %s",
-  "bingo_extras.teamspawnpoint.set.success": "Set the spawn point of team %s to (%s, %s, %s)"
+  "bingo_extras.teamspawnpoint.set.success": "Set the spawn point of team %s to (%s, %s, %s)",
+  "bingo_extras.bingogamerule.query": "Bingo gamerule %s is currently set to: %s",
+  "bingo_extras.bingogamerule.set": "Bingo gamerule %s is now set to: %s"
 }
