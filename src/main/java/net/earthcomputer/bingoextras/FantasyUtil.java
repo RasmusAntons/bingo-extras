@@ -1,9 +1,15 @@
 package net.earthcomputer.bingoextras;
 
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.ParseResults;
+import com.mojang.brigadier.context.CommandContextBuilder;
 import io.github.gaming32.bingo.game.BingoGame;
 import net.earthcomputer.bingoextras.ext.BingoGameExt;
 import net.earthcomputer.bingoextras.ext.fantasy.PlayerTeamExt_Fantasy;
 import net.earthcomputer.bingoextras.ext.fantasy.ServerLevelExt_Fantasy;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -91,8 +97,12 @@ public final class FantasyUtil {
 
     public static void destroyGameSpecificLevels(BingoGame game) {
         var gameSpecificLevels = ((BingoGameExt) game).bingoExtras$getGameSpecificLevels();
+        MinecraftServer server = null;
         for (RuntimeWorldHandle handle : gameSpecificLevels.values()) {
             for (ServerPlayer player : new ArrayList<>(handle.asWorld().players())) {
+                if (server == null) {
+                    server = player.getServer();
+                }
                 ServerLevel overworld = player.getServer().overworld();
                 BlockPos spawnPos = overworld.getSharedSpawnPos();
                 player.teleportTo(overworld, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), player.getYRot(), player.getXRot());
@@ -101,5 +111,11 @@ public final class FantasyUtil {
         }
         gameSpecificLevels.clear();
         ((BingoGameExt) game).bingo_extras$setGameSpecificWorldSeed(0L);
+        if (server != null) {
+            server.getCommands().performPrefixedCommand(
+                    server.createCommandSourceStack(),
+                    "function bingo:on_reset"
+            );
+        }
     }
 }
