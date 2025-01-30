@@ -104,7 +104,7 @@ public final class FantasyUtil {
                 }
                 ServerLevel overworld = player.getServer().overworld();
                 BlockPos spawnPos = overworld.getSharedSpawnPos();
-                player.teleportTo(overworld, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), Relative.ALL, player.getYRot(), player.getXRot(), true);
+                player.teleportTo(overworld, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), Relative.ROTATION, player.getYRot(), player.getXRot(), true);
             }
             handle.delete();
         }
