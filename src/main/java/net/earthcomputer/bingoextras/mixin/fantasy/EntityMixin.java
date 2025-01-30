@@ -1,6 +1,7 @@
 package net.earthcomputer.bingoextras.mixin.fantasy;
 
 import io.github.gaming32.bingo.Bingo;
+import io.github.gaming32.bingo.game.BingoGame;
 import net.earthcomputer.bingoextras.ext.BingoGameExt;
 import net.earthcomputer.bingoextras.FantasyUtil;
 import net.earthcomputer.bingoextras.ext.fantasy.PlayerTeamExt_Fantasy;
@@ -35,13 +36,14 @@ public abstract class EntityMixin {
         if (!FantasyUtil.isForcedDimensionChange() && currentLevelTeam != null && destLevelTeam == null) {
             overrideLevel = PlayerTeamExt_Fantasy.getTeamSpecificLevel(getServer(), currentLevelTeam, dest.newLevel().dimension());
         }
-        if (Bingo.activeGame != null && ((BingoGameExt) Bingo.activeGame).bingo_extras$getGameSpecificWorldSeed() != 0) {
+        final BingoGame activeGame = dest.newLevel().getServer().bingo$getGame();
+        if (activeGame != null && ((BingoGameExt) activeGame).bingo_extras$getGameSpecificWorldSeed() != 0) {
             ResourceKey<Level> dimension = dest.newLevel().dimension();
             var parentLevel = ((ServerLevelExt_Fantasy) dest.newLevel()).bingoExtras$getParentLevel();
             if (parentLevel != null) {
                 dimension = parentLevel.dimension();
             }
-            overrideLevel = BingoGameExt.getGameSpecificLevel(dest.newLevel().getServer(), Bingo.activeGame, dimension);
+            overrideLevel = BingoGameExt.getGameSpecificLevel(dest.newLevel().getServer(), activeGame, dimension);
         }
         if (overrideLevel != null) {
             dest = new TeleportTransition(

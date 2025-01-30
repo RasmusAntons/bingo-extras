@@ -4,13 +4,13 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import io.github.gaming32.bingo.Bingo;
+import io.github.gaming32.bingo.game.BingoGame;
 import net.earthcomputer.bingoextras.BingoExtras;
 import net.earthcomputer.bingoextras.ext.BingoGameExt;
 import net.earthcomputer.bingoextras.ext.fantasy.ServerLevelExt_Fantasy;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.GameRules;
 
 import static net.earthcomputer.bingoextras.command.BingoSpreadPlayersSeedfindCommand.NO_RUNNING_GAME_EXCEPTION;
@@ -20,7 +20,7 @@ public class BingoGameRuleCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         final LiteralArgumentBuilder<CommandSourceStack> argumentBuilder = literal("bingogamerule")
                 .requires(source -> source.hasPermission(2));
-        GameRules.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
+        new GameRules(FeatureFlags.REGISTRY.allFlags()).visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
             @Override
             public <T extends GameRules.Value<T>> void visit(GameRules.Key<T> key, GameRules.Type<T> type) {
                 argumentBuilder.then(
@@ -36,10 +36,11 @@ public class BingoGameRuleCommand {
     static <T extends GameRules.Value<T>> int setRule(CommandContext<CommandSourceStack> commandContext, GameRules.Key<T> key) throws CommandSyntaxException {
         CommandSourceStack commandSourceStack = commandContext.getSource();
         T value = null;
-        if (Bingo.activeGame == null) {
+        final BingoGame activeGame = commandContext.getSource().getServer().bingo$getGame();
+        if (activeGame == null) {
             throw NO_RUNNING_GAME_EXCEPTION.create();
         }
-        ((BingoGameExt) Bingo.activeGame).bingoExtras$getGameRules().put(key, commandContext);
+        ((BingoGameExt) activeGame).bingoExtras$getGameRules().put(key, commandContext);
         for (ServerLevel level : commandSourceStack.getServer().getAllLevels()) {
             ServerLevel parentLevel = ((ServerLevelExt_Fantasy) level).bingoExtras$getParentLevel();
             if (parentLevel == null)

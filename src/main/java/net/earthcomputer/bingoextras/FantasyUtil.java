@@ -7,14 +7,12 @@ import io.github.gaming32.bingo.game.BingoGame;
 import net.earthcomputer.bingoextras.ext.BingoGameExt;
 import net.earthcomputer.bingoextras.ext.fantasy.PlayerTeamExt_Fantasy;
 import net.earthcomputer.bingoextras.ext.fantasy.ServerLevelExt_Fantasy;
-import net.minecraft.commands.CommandSource;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Relative;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.scores.PlayerTeam;
 import org.jetbrains.annotations.Nullable;
@@ -106,7 +104,7 @@ public final class FantasyUtil {
                 }
                 ServerLevel overworld = player.getServer().overworld();
                 BlockPos spawnPos = overworld.getSharedSpawnPos();
-                player.teleportTo(overworld, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), player.getYRot(), player.getXRot());
+                player.teleportTo(overworld, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), Relative.ALL, player.getYRot(), player.getXRot(), true);
             }
             handle.delete();
         }

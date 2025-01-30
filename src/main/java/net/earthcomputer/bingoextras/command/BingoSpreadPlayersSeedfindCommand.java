@@ -6,6 +6,9 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import de.rasmusantons.cubiomes.*;
 import io.github.gaming32.bingo.Bingo;
+import io.github.gaming32.bingo.data.BingoTag;
+import io.github.gaming32.bingo.data.goal.GoalHolder;
+import io.github.gaming32.bingo.data.goal.GoalManager;
 import io.github.gaming32.bingo.game.ActiveGoal;
 import io.github.gaming32.bingo.game.BingoGame;
 import net.earthcomputer.bingoextras.BingoExtras;
@@ -29,6 +32,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Relative;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -93,7 +97,7 @@ public class BingoSpreadPlayersSeedfindCommand {
             throw new AssertionError("No groups");
         }
 
-        BingoGame activeGame = Bingo.activeGame;
+        BingoGame activeGame = source.getServer().bingo$getGame();
         if (activeGame == null) {
             throw NO_RUNNING_GAME_EXCEPTION.create();
         }
@@ -123,7 +127,7 @@ public class BingoSpreadPlayersSeedfindCommand {
     }
 
     private static Map<ResourceKey<DimensionType>, Set<Holder<Biome>>> getRequiredBiomes(RegistryAccess access, BingoGame game) {
-        Map<ResourceKey<DimensionType>, ResourceLocation> tags = Map.of(
+        Map<ResourceKey<DimensionType>, ResourceLocation> dimensionTags = Map.of(
                 BuiltinDimensionTypes.OVERWORLD, ResourceLocation.withDefaultNamespace("is_overworld"),
                 BuiltinDimensionTypes.NETHER, ResourceLocation.withDefaultNamespace("is_nether"),
                 BuiltinDimensionTypes.END, ResourceLocation.withDefaultNamespace("is_end")
@@ -133,14 +137,15 @@ public class BingoSpreadPlayersSeedfindCommand {
                 BuiltinDimensionTypes.NETHER, new HashSet<>(),
                 BuiltinDimensionTypes.END, new HashSet<>()
         );
-        for (ActiveGoal goal : game.getBoard().getGoals()) {
-            for (ResourceLocation tagId : goal.goal().goal().getTagIds()) {
-                Registry<Biome> registry = access.registry(Registries.BIOME).orElseThrow();
-                Optional<Holder.Reference<Biome>> biome = registry.getHolder(ResourceLocation.withDefaultNamespace(tagId.getPath()));
+        Registry<Biome> biomeRegistry = access.lookup(Registries.BIOME).orElseThrow();
+        for (ActiveGoal activeGoal : game.getBoard().getGoals()) {
+            GoalHolder goal = GoalManager.getGoal(activeGoal.id());
+            for (Holder<BingoTag> goalTag : goal.goal().getTags()) {
+                Optional<Holder.Reference<Biome>> biome = biomeRegistry.get(ResourceLocation.withDefaultNamespace(goalTag.unwrapKey().orElseThrow().location().getPath()));
                 if (biome.isPresent()) {
-                    for (Map.Entry<ResourceKey<DimensionType>, ResourceLocation> tag : tags.entrySet()) {
-                        if (biome.get().tags().anyMatch(t -> t.location().equals(tag.getValue()))) {
-                            requiredBiomes.get(tag.getKey()).add(biome.get());
+                    for (Map.Entry<ResourceKey<DimensionType>, ResourceLocation> dimensionTag : dimensionTags.entrySet()) {
+                        if (biome.get().tags().anyMatch(t -> t.location().equals(dimensionTag.getValue()))) {
+                            requiredBiomes.get(dimensionTag.getKey()).add(biome.get());
                         }
                     }
                 }
@@ -258,7 +263,7 @@ public class BingoSpreadPlayersSeedfindCommand {
                 double effectiveX = groupSpawns[i].x - spread / 2 + rand.nextInt((int) spread);
                 double effectiveY = groupSpawns[i].y - spread / 2 + rand.nextInt((int) spread);
                 var adjustedSpawn = adjustToSafeLocation(gameLevel, new Vector2d(effectiveX, effectiveY));
-                entity.teleportTo(gameLevel, adjustedSpawn.x, adjustedSpawn.y, adjustedSpawn.z, Set.of(), entity.getYRot(), entity.getXRot());
+                entity.teleportTo(gameLevel, adjustedSpawn.x, adjustedSpawn.y, adjustedSpawn.z, Relative.ROTATION, entity.getYRot(), entity.getXRot(), true);
             }
         }
     }

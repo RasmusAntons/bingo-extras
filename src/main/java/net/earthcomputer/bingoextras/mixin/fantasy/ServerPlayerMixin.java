@@ -3,13 +3,14 @@ package net.earthcomputer.bingoextras.mixin.fantasy;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.authlib.GameProfile;
-import io.github.gaming32.bingo.Bingo;
+import io.github.gaming32.bingo.game.BingoGame;
 import net.earthcomputer.bingoextras.FantasyUtil;
 import net.earthcomputer.bingoextras.ext.BingoGameExt;
 import net.earthcomputer.bingoextras.ext.fantasy.PlayerTeamExt_Fantasy;
 import net.earthcomputer.bingoextras.ext.fantasy.ServerLevelExt_Fantasy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Relative;
@@ -17,7 +18,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.scores.PlayerTeam;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
@@ -25,6 +28,8 @@ import java.util.Set;
 
 @Mixin(ServerPlayer.class)
 public abstract class ServerPlayerMixin extends Player {
+    @Shadow @Final public MinecraftServer server;
+
     public ServerPlayerMixin(Level level, BlockPos blockPos, float f, GameProfile gameProfile) {
         super(level, blockPos, f, gameProfile);
     }
@@ -37,13 +42,14 @@ public abstract class ServerPlayerMixin extends Player {
         if (!FantasyUtil.isForcedDimensionChange() && currentLevelTeam != null && destLevelTeam == null) {
             overrideLevel = PlayerTeamExt_Fantasy.getTeamSpecificLevel(getServer(), currentLevelTeam, dest.newLevel().dimension());
         }
-        if (Bingo.activeGame != null && ((BingoGameExt) Bingo.activeGame).bingo_extras$getGameSpecificWorldSeed() != 0) {
+        final BingoGame activeGame = server.bingo$getGame();
+        if (activeGame != null && ((BingoGameExt) activeGame).bingo_extras$getGameSpecificWorldSeed() != 0) {
             ResourceKey<Level> dimension = dest.newLevel().dimension();
             var parentLevel = ((ServerLevelExt_Fantasy) dest.newLevel()).bingoExtras$getParentLevel();
             if (parentLevel != null) {
                 dimension = parentLevel.dimension();
             }
-            overrideLevel = BingoGameExt.getGameSpecificLevel(dest.newLevel().getServer(), Bingo.activeGame, dimension);
+            overrideLevel = BingoGameExt.getGameSpecificLevel(dest.newLevel().getServer(), activeGame, dimension);
         }
         if (overrideLevel != null) {
             dest = new TeleportTransition(
@@ -68,13 +74,14 @@ public abstract class ServerPlayerMixin extends Player {
         if (!FantasyUtil.isForcedDimensionChange() && currentLevelTeam != null && destLevelTeam == null) {
             dest = PlayerTeamExt_Fantasy.getTeamSpecificLevel(getServer(), currentLevelTeam, dest.dimension());
         }
-        if (Bingo.activeGame != null && ((BingoGameExt) Bingo.activeGame).bingo_extras$getGameSpecificWorldSeed() != 0) {
+        final BingoGame activeGame = server.bingo$getGame();
+        if (activeGame != null && ((BingoGameExt) activeGame).bingo_extras$getGameSpecificWorldSeed() != 0) {
             ResourceKey<Level> dimension = dest.dimension();
             var parentLevel = ((ServerLevelExt_Fantasy) dest).bingoExtras$getParentLevel();
             if (parentLevel != null) {
                 dimension = parentLevel.dimension();
             }
-            dest = BingoGameExt.getGameSpecificLevel(dest.getServer(), Bingo.activeGame, dimension);
+            dest = BingoGameExt.getGameSpecificLevel(dest.getServer(), activeGame, dimension);
         }
         return dest;
     }

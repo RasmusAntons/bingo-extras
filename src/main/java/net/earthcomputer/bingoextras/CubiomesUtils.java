@@ -14,15 +14,15 @@ import java.util.Optional;
 
 public class CubiomesUtils {
     public static Holder<Biome> biomeIDToBiome(RegistryAccess access, BiomeID biomeID) throws NoSuchElementException {
-        Registry<Biome> registry = access.registry(Registries.BIOME).orElseThrow();
-        Optional<Holder.Reference<Biome>> biome = registry.getHolder(ResourceLocation.withDefaultNamespace(biomeID.name()));
+        Registry<Biome> registry = access.lookup(Registries.BIOME).orElseThrow();
+        Optional<Holder.Reference<Biome>> biome = registry.get(ResourceLocation.withDefaultNamespace(biomeID.name()));
         if (biome.isPresent()) {
             return biome.get();
         } else {
             for (String altName : biomeID.getAltNames()) {
                 if (!ResourceLocation.isValidPath(altName))
                     continue;
-                biome = registry.getHolder(ResourceLocation.withDefaultNamespace(altName));
+                biome = registry.get(ResourceLocation.withDefaultNamespace(altName));
                 if (biome.isPresent())
                     return biome.get();
             }

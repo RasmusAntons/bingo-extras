@@ -4,7 +4,9 @@ import net.earthcomputer.bingoextras.FreezePeriod;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.world.entity.RelativeMovement;
+import net.minecraft.world.entity.PositionMoveRotation;
+import net.minecraft.world.entity.Relative;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,7 +21,7 @@ public abstract class ServerGamePacketListenerImplMixin {
     public ServerPlayer player;
 
     @Shadow
-    public abstract void teleport(double d, double e, double f, float g, float h, Set<RelativeMovement> set);
+    public abstract void teleport(PositionMoveRotation positionMoveRotation, Set<Relative> set);
 
     @Shadow
     private boolean clientIsFloating;
@@ -27,8 +29,8 @@ public abstract class ServerGamePacketListenerImplMixin {
     @Inject(method = "handleMovePlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;isPassenger()Z"), cancellable = true)
     private void onMovePlayer(ServerboundMovePlayerPacket packet, CallbackInfo ci) {
         if (!this.clientIsFloating && !(this.player.isChangingDimension()) && FreezePeriod.INSTANCE.isInFreezePeriod(this.player)) {
-            teleport(this.player.getX(), this.player.getY(), this.player.getZ(), this.player.getYRot(), this.player.getXRot(), RelativeMovement.ROTATION);
-            this.player.serverLevel().getChunkSource().move(this.player);
+            this.teleport(new PositionMoveRotation(this.player.position(), Vec3.ZERO, 0.0F, 0.0F), Relative.ROTATION);
+            this.player.setCamera(this.player);
             ci.cancel();
         }
     }
