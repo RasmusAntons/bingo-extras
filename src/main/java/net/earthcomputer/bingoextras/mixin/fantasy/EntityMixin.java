@@ -47,7 +47,7 @@ public abstract class EntityMixin {
         }
         if (overrideLevel != null) {
             dest = new TeleportTransition(
-                    PlayerTeamExt_Fantasy.getTeamSpecificLevel(getServer(), currentLevelTeam, dest.newLevel().dimension()),
+                    overrideLevel,
                     dest.position(),
                     dest.deltaMovement(),
                     dest.yRot(),
