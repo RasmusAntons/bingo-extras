@@ -110,11 +110,5 @@ public final class FantasyUtil {
         }
         gameSpecificLevels.clear();
         ((BingoGameExt) game).bingo_extras$setGameSpecificWorldSeed(0L);
-        if (server != null) {
-            server.getCommands().performPrefixedCommand(
-                    server.createCommandSourceStack(),
-                    "function bingo:on_reset"
-            );
-        }
     }
 }
