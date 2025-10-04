@@ -56,7 +56,7 @@ public final class BingoUtil {
     }
 
     public static boolean isOnRemainingTeam(ServerPlayer player) {
-        Object bingoGame = getBingoGame(player.getServer());
+        Object bingoGame = getBingoGame(player.level().getServer());
         if (bingoGame == null) {
             return false;
         }

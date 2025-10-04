@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(targets = "io.github.gaming32.bingo.conditions.DistanceFromSpawnCondition", remap = false)
 @Pseudo
 public class DistanceFromSpawnConditionMixin {
-    @ModifyExpressionValue(method = "test", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;getSharedSpawnPos()Lnet/minecraft/core/BlockPos;", remap = true))
+    @ModifyExpressionValue(method = "test", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/storage/LevelData$RespawnData;pos()Lnet/minecraft/core/BlockPos;", remap = true))
     @Dynamic
     private BlockPos modifySpawnPoint(BlockPos original, LootContext lootContext) {
         Entity entity = lootContext.getParameter(LootContextParams.THIS_ENTITY);

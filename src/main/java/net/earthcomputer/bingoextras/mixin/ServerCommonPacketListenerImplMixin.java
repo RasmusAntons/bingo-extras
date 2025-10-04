@@ -7,6 +7,7 @@ import net.minecraft.network.protocol.game.ClientboundSetDefaultSpawnPositionPac
 import net.minecraft.server.network.ServerCommonPacketListenerImpl;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.scores.PlayerTeam;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -25,7 +26,7 @@ public class ServerCommonPacketListenerImplMixin {
             if (team != null) {
                 GlobalPos teamSpawnPos = PlayerTeamExt.getTeamSpawnPos(team);
                 if (teamSpawnPos != null && teamSpawnPos.dimension() == Level.OVERWORLD) {
-                    return new ClientboundSetDefaultSpawnPositionPacket(teamSpawnPos.pos(), spawnPosPacket.getAngle());
+                    return new ClientboundSetDefaultSpawnPositionPacket(new LevelData.RespawnData(teamSpawnPos, spawnPosPacket.respawnData().yaw(), spawnPosPacket.respawnData().pitch()));
                 }
             }
         }

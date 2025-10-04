@@ -10,6 +10,7 @@
     "ScoreboardMixin",
     "ServerCommonPacketListenerImplMixin",
     "ServerPlayerMixin",
+    "TeleportTransitionMixin",
     "bingo.BingoCommandMixin",
     "bingo.BingoGameMixin",
     "bingo.DistanceFromSpawnConditionMixin",

@@ -36,7 +36,7 @@ public final class TeamSpawnPointCommand {
         MinecraftServer server = source.getServer();
         ServerLevel overworld = server.overworld();
         // this packet will be modified to update all players of their team spawn point
-        server.getPlayerList().broadcastAll(new ClientboundSetDefaultSpawnPositionPacket(overworld.getSharedSpawnPos(), overworld.getSharedSpawnAngle()));
+        server.getPlayerList().broadcastAll(new ClientboundSetDefaultSpawnPositionPacket(overworld.getRespawnData()));
         if (pos != null) {
             source.sendSuccess(() -> BingoExtras.translatable("bingo_extras.teamspawnpoint.set.success", team.getFormattedDisplayName(), pos.getX(), pos.getY(), pos.getZ()), true);
         } else {

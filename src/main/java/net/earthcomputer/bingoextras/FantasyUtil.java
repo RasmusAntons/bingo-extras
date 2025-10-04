@@ -50,7 +50,7 @@ public final class FantasyUtil {
         for (RuntimeWorldHandle handle : teamSpecificLevels.values()) {
             for (ServerPlayer player : new ArrayList<>(handle.asWorld().players())) {
                 ServerLevel originalLevel = Objects.requireNonNull(ServerLevelExt_Fantasy.getOriginalLevel(handle.asWorld()), "No original level for team specific world");
-                BlockPos spawnPoint = originalLevel.getSharedSpawnPos();
+                BlockPos spawnPoint = originalLevel.getRespawnData().pos();
                 forceDimensionChange(() -> player.teleportTo(originalLevel, spawnPoint.getX() + 0.5, spawnPoint.getY(), spawnPoint.getZ() + 0.5, Set.of(), player.getYRot(), player.getXRot(), true));
             }
             handle.delete();

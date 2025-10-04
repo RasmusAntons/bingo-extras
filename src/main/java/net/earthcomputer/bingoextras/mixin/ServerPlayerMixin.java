@@ -1,6 +1,5 @@
 package net.earthcomputer.bingoextras.mixin;
 
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.authlib.GameProfile;
 import net.earthcomputer.bingoextras.command.FullBrightCommand;
@@ -10,7 +9,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -43,22 +41,6 @@ public abstract class ServerPlayerMixin extends Player implements ServerPlayerEx
             GlobalPos teamSpawnPos = PlayerTeamExt.getTeamSpawnPos(team);
             if (teamSpawnPos != null) {
                 return teamSpawnPos.pos();
-            }
-        }
-
-        return original;
-    }
-
-    @ModifyExpressionValue(method = "findRespawnPositionAndUseSpawnBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;overworld()Lnet/minecraft/server/level/ServerLevel;"))
-    private ServerLevel respawnTeamInDimension(ServerLevel original) {
-        PlayerTeam team = this.getTeam();
-        if (team != null) {
-            GlobalPos respawnPos = PlayerTeamExt.getTeamSpawnPos(team);
-            if (respawnPos != null) {
-                ServerLevel level = this.getServer().getLevel(respawnPos.dimension());
-                if (level != null) {
-                    return level;
-                }
             }
         }
 

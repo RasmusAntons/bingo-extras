@@ -31,7 +31,7 @@ public abstract class ServerPlayerMixin extends Player {
         PlayerTeam destLevelTeam = ServerLevelExt_Fantasy.getTeam(dest.newLevel());
         if (!FantasyUtil.isForcedDimensionChange() && currentLevelTeam != null && destLevelTeam == null) {
             dest = new TeleportTransition(
-                PlayerTeamExt_Fantasy.getTeamSpecificLevel(getServer(), currentLevelTeam, dest.newLevel().dimension()),
+                PlayerTeamExt_Fantasy.getTeamSpecificLevel(level().getServer(), currentLevelTeam, dest.newLevel().dimension()),
                 dest.position(),
                 dest.deltaMovement(),
                 dest.yRot(),
@@ -50,7 +50,7 @@ public abstract class ServerPlayerMixin extends Player {
         PlayerTeam currentLevelTeam = ServerLevelExt_Fantasy.getTeam((ServerLevel) level());
         PlayerTeam destLevelTeam = ServerLevelExt_Fantasy.getTeam(dest);
         if (!FantasyUtil.isForcedDimensionChange() && currentLevelTeam != null && destLevelTeam == null) {
-            dest = PlayerTeamExt_Fantasy.getTeamSpecificLevel(getServer(), currentLevelTeam, dest.dimension());
+            dest = PlayerTeamExt_Fantasy.getTeamSpecificLevel(level().getServer(), currentLevelTeam, dest.dimension());
         }
         return dest;
     }
