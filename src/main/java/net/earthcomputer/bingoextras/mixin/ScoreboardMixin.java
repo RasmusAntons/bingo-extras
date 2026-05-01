@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Scoreboard.class)
 public class ScoreboardMixin {
     @Inject(method = "loadPlayerTeam", at = @At("RETURN"))
-    private void onLoadTeam(PlayerTeam.Packed packed, CallbackInfo ci, @Local PlayerTeam team) {
+    private void onLoadTeam(PlayerTeam.Packed packed, CallbackInfo ci, @Local(name = "team") PlayerTeam team) {
         PlayerTeamExt.setTeamSpawnPos(team, PlayerTeamPackedExt.getTeamSpawnPos(packed).orElse(null));
     }
 }

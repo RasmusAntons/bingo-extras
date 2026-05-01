@@ -15,7 +15,7 @@ import java.util.Set;
 @Mixin(TeleportCommand.class)
 public class TeleportCommandMixin {
     @WrapOperation(method = "performTeleport", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDLjava/util/Set;FFZ)Z"))
-    private static boolean forceTeleport(Entity instance, ServerLevel serverLevel, double d, double e, double f, Set<Relative> set, float g, float h, boolean bl, Operation<Boolean> original) {
-        return FantasyUtil.forceDimensionChange(() -> original.call(instance, serverLevel, d, e, f, set, g, h, bl));
+    private static boolean forceTeleport(Entity instance, ServerLevel level, double x, double y, double z, Set<Relative> relatives, float newYRot, float newXRot, boolean resetCamera, Operation<Boolean> original) {
+        return FantasyUtil.forceDimensionChange(() -> original.call(instance, level, x, y, z, relatives, newYRot, newXRot, resetCamera));
     }
 }

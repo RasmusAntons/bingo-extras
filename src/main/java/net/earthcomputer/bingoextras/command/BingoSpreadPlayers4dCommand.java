@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -39,7 +40,7 @@ public final class BingoSpreadPlayers4dCommand {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext buildContext) {
         dispatcher.register(literal("bingospreadplayers4d")
-            .requires(source -> source.hasPermission(2))
+            .requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
             .then(argument("center", vec2())
                 .then(argument("maxDistance", doubleArg(0))
                     .then(argument("targets", entities())

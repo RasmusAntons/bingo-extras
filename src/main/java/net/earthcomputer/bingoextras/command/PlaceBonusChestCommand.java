@@ -9,6 +9,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -33,7 +34,7 @@ public final class PlaceBonusChestCommand {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context) {
         dispatcher.register(literal("placebonuschest")
-            .requires(source -> source.hasPermission(2))
+            .requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
             .then(argument("pos", blockPos())
                 .then(argument("radius", integer(0))
                     .executes(ctx -> placeBonusChest(ctx.getSource(), getBlockPos(ctx, "pos"), getInteger(ctx, "radius"), context.lookupOrThrow(Registries.LOOT_TABLE).getOrThrow(BuiltInLootTables.SPAWN_BONUS_CHEST), RandomSupport.generateUniqueSeed()))

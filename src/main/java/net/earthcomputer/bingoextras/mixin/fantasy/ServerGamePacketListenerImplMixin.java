@@ -15,8 +15,8 @@ import java.util.Set;
 @Mixin(ServerGamePacketListenerImpl.class)
 public class ServerGamePacketListenerImplMixin {
     @WrapOperation(method = "handleTeleportToEntityPacket", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDLjava/util/Set;FFZ)Z"))
-    private boolean forceTeleport(ServerPlayer instance, ServerLevel serverLevel, double d, double e, double f, Set<Relative> set, float g, float h, boolean bl, Operation<Boolean> original) {
-        FantasyUtil.forceDimensionChange(() -> original.call(instance, serverLevel, d, e, f, set, g, h, bl));
-        return bl;
+    private boolean forceTeleport(ServerPlayer instance, ServerLevel level, double x, double y, double z, Set<Relative> relatives, float newYRot, float newXRot, boolean resetCamera, Operation<Boolean> original) {
+        FantasyUtil.forceDimensionChange(() -> original.call(instance, level, x, y, z, relatives, newYRot, newXRot, resetCamera));
+        return resetCamera;
     }
 }

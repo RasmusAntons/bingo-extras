@@ -25,7 +25,7 @@ public abstract class ServerPlayerMixin extends Player {
         super(level, gameProfile);
     }
 
-    @ModifyVariable(method = "teleport(Lnet/minecraft/world/level/portal/TeleportTransition;)Lnet/minecraft/server/level/ServerPlayer;", at = @At("HEAD"), argsOnly = true)
+    @ModifyVariable(method = "teleport(Lnet/minecraft/world/level/portal/TeleportTransition;)Lnet/minecraft/server/level/ServerPlayer;", at = @At("HEAD"), argsOnly = true, name = "transition")
     private TeleportTransition modifyDestDimension(TeleportTransition dest) {
         PlayerTeam currentLevelTeam = ServerLevelExt_Fantasy.getTeam((ServerLevel) level());
         PlayerTeam destLevelTeam = ServerLevelExt_Fantasy.getTeam(dest.newLevel());
@@ -45,7 +45,7 @@ public abstract class ServerPlayerMixin extends Player {
         return dest;
     }
 
-    @ModifyVariable(method = "teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDLjava/util/Set;FFZ)Z", at = @At("HEAD"), argsOnly = true)
+    @ModifyVariable(method = "teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDLjava/util/Set;FFZ)Z", at = @At("HEAD"), argsOnly = true, name = "level")
     private ServerLevel modifyDestDimension(ServerLevel dest) {
         PlayerTeam currentLevelTeam = ServerLevelExt_Fantasy.getTeam((ServerLevel) level());
         PlayerTeam destLevelTeam = ServerLevelExt_Fantasy.getTeam(dest);
@@ -56,7 +56,7 @@ public abstract class ServerPlayerMixin extends Player {
     }
 
     @WrapOperation(method = "setCamera", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;teleportTo(Lnet/minecraft/server/level/ServerLevel;DDDLjava/util/Set;FFZ)Z"))
-    private boolean forceDimensionChange(ServerPlayer instance, ServerLevel serverLevel, double d, double e, double f, Set<Relative> set, float g, float h, boolean bl, Operation<Boolean> original) {
-        return FantasyUtil.forceDimensionChange(() -> original.call(instance, serverLevel, d, e, f, set, g, h, bl));
+    private boolean forceDimensionChange(ServerPlayer instance, ServerLevel level, double x, double y, double z, Set<Relative> relatives, float newYRot, float newXRot, boolean resetCamera, Operation<Boolean> original) {
+        return FantasyUtil.forceDimensionChange(() -> original.call(instance, level, x, y, z, relatives, newYRot, newXRot, resetCamera));
     }
 }

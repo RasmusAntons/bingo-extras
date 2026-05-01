@@ -13,9 +13,9 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin({NetherPortalBlock.class, EndPortalBlock.class})
 public class PortalBlocksMixin {
-    @ModifyVariable(method = "getPortalDestination", at = @At("STORE"), ordinal = 1)
-    private ServerLevel modifyDestLevel(ServerLevel destLevel, ServerLevel sourceLevel) {
-        PlayerTeam currentLevelTeam = ServerLevelExt_Fantasy.getTeam(sourceLevel);
+    @ModifyVariable(method = "getPortalDestination", at = @At("STORE"), name = "newLevel")
+    private ServerLevel modifyDestLevel(ServerLevel destLevel, ServerLevel currentLevel) {
+        PlayerTeam currentLevelTeam = ServerLevelExt_Fantasy.getTeam(currentLevel);
         PlayerTeam destLevelTeam = ServerLevelExt_Fantasy.getTeam(destLevel);
         if (!FantasyUtil.isForcedDimensionChange() && currentLevelTeam != null && destLevelTeam == null) {
             destLevel = PlayerTeamExt_Fantasy.getTeamSpecificLevel(destLevel.getServer(), currentLevelTeam, destLevel.dimension());

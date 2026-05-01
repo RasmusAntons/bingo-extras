@@ -18,7 +18,7 @@ public abstract class EntityMixin {
     @Shadow
     private Level level;
 
-    @ModifyVariable(method = "teleport", at = @At("HEAD"), argsOnly = true)
+    @ModifyVariable(method = "teleport", at = @At("HEAD"), argsOnly = true, name = "transition")
     private TeleportTransition modifyDestDimension(TeleportTransition dest) {
         PlayerTeam currentLevelTeam = ServerLevelExt_Fantasy.getTeam((ServerLevel) level);
         PlayerTeam destLevelTeam = ServerLevelExt_Fantasy.getTeam(dest.newLevel());

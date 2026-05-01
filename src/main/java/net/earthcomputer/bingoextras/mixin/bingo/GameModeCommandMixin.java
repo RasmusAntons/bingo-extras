@@ -19,8 +19,8 @@ import java.util.Collection;
 public class GameModeCommandMixin {
 
     @Inject(method = "setMode", at = @At("HEAD"))
-    private static void onSetGameMode(CommandContext<CommandSourceStack> ctx, Collection<ServerPlayer> players, GameType newGameMode, CallbackInfoReturnable<Integer> cir) throws CommandSyntaxException {
-        ServerPlayer player = ctx.getSource().getPlayer();
+    private static void onSetGameMode(CommandContext<CommandSourceStack> context, Collection<ServerPlayer> players, GameType type, CallbackInfoReturnable<Integer> cir) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayer();
         if (player != null && BingoUtil.isOnRemainingTeam(player) && players.contains(player)) {
             throw CsCommand.PLAYING_BINGO_EXCEPTION.create();
         }

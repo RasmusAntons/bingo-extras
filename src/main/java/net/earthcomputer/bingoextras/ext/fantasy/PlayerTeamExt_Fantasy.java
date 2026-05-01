@@ -8,17 +8,17 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
-import net.minecraft.world.level.dimension.end.EndDragonFight;
+import net.minecraft.world.level.dimension.end.EnderDragonFight;
 import net.minecraft.world.scores.PlayerTeam;
 import xyz.nucleoid.fantasy.Fantasy;
-import xyz.nucleoid.fantasy.RuntimeWorldConfig;
-import xyz.nucleoid.fantasy.RuntimeWorldHandle;
+import xyz.nucleoid.fantasy.RuntimeLevelConfig;
+import xyz.nucleoid.fantasy.RuntimeLevelHandle;
 
 import java.util.Map;
 import java.util.Objects;
 
 public interface PlayerTeamExt_Fantasy {
-    Map<ResourceKey<Level>, RuntimeWorldHandle> bingoExtras$getTeamSpecificLevels();
+    Map<ResourceKey<Level>, RuntimeLevelHandle> bingoExtras$getTeamSpecificLevels();
 
     @SuppressWarnings("deprecation")
     static ServerLevel getTeamSpecificLevel(MinecraftServer server, PlayerTeam team, ResourceKey<Level> dimension) {
@@ -26,21 +26,21 @@ public interface PlayerTeamExt_Fantasy {
         return ((PlayerTeamExt_Fantasy) team).bingoExtras$getTeamSpecificLevels().computeIfAbsent(dimension, k -> {
             ServerLevel originalLevel = Objects.requireNonNull(server.getLevel(dimension), () -> "No server level associated with " + dimension);
             Preconditions.checkArgument(ServerLevelExt_Fantasy.getTeam(originalLevel) == null, "Tried to get team specific level of team level %s", dimension);
-            RuntimeWorldHandle handle = Fantasy.get(server).openTemporaryWorld(
-                new RuntimeWorldConfig()
+            RuntimeLevelHandle handle = Fantasy.get(server).openTemporaryLevel(
+                new RuntimeLevelConfig()
                     .setDimensionType(originalLevel.dimensionTypeRegistration())
                     .setDifficulty(originalLevel.getDifficulty())
                     .setGenerator(originalLevel.getChunkSource().getGenerator())
                     .setSeed(bingoGame == null ? originalLevel.getSeed() : BingoGameExt.getSeed(bingoGame))
                     .setShouldTickTime(true)
                     .setMirrorOverworldGameRules(true)
-                    .setTimeOfDay(originalLevel.dayTime())
+                    .setGameTime(originalLevel.getGameTime()) // TODO: is this right?
             );
-            ServerLevelExt_Fantasy.initializeTeam(handle.asWorld(), team, originalLevel);
+            ServerLevelExt_Fantasy.initializeTeam(handle.asLevel(), team, originalLevel);
             if (originalLevel.dimension() == Level.END && originalLevel.dimensionTypeRegistration().is(BuiltinDimensionTypes.END)) {
-                handle.asWorld().setDragonFight(new EndDragonFight(handle.asWorld(), originalLevel.getSeed(), EndDragonFight.Data.DEFAULT));
+                handle.asLevel().setDragonFight(EnderDragonFight.createDefault());
             }
             return handle;
-        }).asWorld();
+        }).asLevel();
     }
 }

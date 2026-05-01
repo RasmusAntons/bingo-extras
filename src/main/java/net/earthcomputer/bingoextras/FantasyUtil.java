@@ -10,7 +10,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.scores.PlayerTeam;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.fantasy.RuntimeWorldHandle;
+import xyz.nucleoid.fantasy.RuntimeLevelHandle;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -47,9 +47,9 @@ public final class FantasyUtil {
 
     public static void destroyTeamSpecificLevels(PlayerTeam team) {
         var teamSpecificLevels = ((PlayerTeamExt_Fantasy) team).bingoExtras$getTeamSpecificLevels();
-        for (RuntimeWorldHandle handle : teamSpecificLevels.values()) {
-            for (ServerPlayer player : new ArrayList<>(handle.asWorld().players())) {
-                ServerLevel originalLevel = Objects.requireNonNull(ServerLevelExt_Fantasy.getOriginalLevel(handle.asWorld()), "No original level for team specific world");
+        for (RuntimeLevelHandle handle : teamSpecificLevels.values()) {
+            for (ServerPlayer player : new ArrayList<>(handle.asLevel().players())) {
+                ServerLevel originalLevel = Objects.requireNonNull(ServerLevelExt_Fantasy.getOriginalLevel(handle.asLevel()), "No original level for team specific world");
                 BlockPos spawnPoint = originalLevel.getRespawnData().pos();
                 forceDimensionChange(() -> player.teleportTo(originalLevel, spawnPoint.getX() + 0.5, spawnPoint.getY(), spawnPoint.getZ() + 0.5, Set.of(), player.getYRot(), player.getXRot(), true));
             }

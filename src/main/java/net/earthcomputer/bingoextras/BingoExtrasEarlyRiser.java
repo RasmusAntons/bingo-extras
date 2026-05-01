@@ -2,7 +2,6 @@ package net.earthcomputer.bingoextras;
 
 import com.chocohead.mm.api.ClassTinkerers;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.MappingResolver;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Label;
@@ -28,23 +27,13 @@ import java.util.stream.Stream;
 public class BingoExtrasEarlyRiser implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(BingoExtrasEarlyRiser.class);
 
-    private static final String LEVEL_CLASS_NAME;
-    private static final String SERVER_LEVEL_CLASS_NAME;
-    private static final String RESOURCE_KEY_CLASS_NAME;
-    private static final String DIMENSION_METHOD_NAME;
-    private static final String OVERWORLD_FIELD_NAME;
-    private static final String NETHER_FIELD_NAME;
-    private static final String END_FIELD_NAME;
-    static {
-        MappingResolver mappings = FabricLoader.getInstance().getMappingResolver();
-        LEVEL_CLASS_NAME = mappings.mapClassName("intermediary", "net.minecraft.class_1937").replace('.', '/');
-        SERVER_LEVEL_CLASS_NAME = mappings.mapClassName("intermediary", "net.minecraft.class_3218").replace('.', '/');
-        RESOURCE_KEY_CLASS_NAME = mappings.mapClassName("intermediary", "net.minecraft.class_5321").replace('.', '/');
-        DIMENSION_METHOD_NAME = mappings.mapMethodName("intermediary", "net.minecraft.class_1937", "method_27983", "()Lnet/minecraft/class_5321;");
-        OVERWORLD_FIELD_NAME = mappings.mapFieldName("intermediary", "net.minecraft.class_1937", "field_25179", "Lnet/minecraft/class_5321;");
-        NETHER_FIELD_NAME = mappings.mapFieldName("intermediary", "net.minecraft.class_1937", "field_25180", "Lnet/minecraft/class_5321;");
-        END_FIELD_NAME = mappings.mapFieldName("intermediary", "net.minecraft.class_1937", "field_25181", "Lnet/minecraft/class_5321;");
-    }
+    private static final String LEVEL_CLASS_NAME = "net/minecraft/world/level/Level";
+    private static final String SERVER_LEVEL_CLASS_NAME = "net/minecraft/server/level/ServerLevel";
+    private static final String RESOURCE_KEY_CLASS_NAME = "net/minecraft/resources/ResourceKey";
+    private static final String DIMENSION_METHOD_NAME = "dimension";
+    private static final String OVERWORLD_FIELD_NAME = "OVERWORLD";
+    private static final String NETHER_FIELD_NAME = "NETHER";
+    private static final String END_FIELD_NAME = "END";
 
     @Override
     public void run() {

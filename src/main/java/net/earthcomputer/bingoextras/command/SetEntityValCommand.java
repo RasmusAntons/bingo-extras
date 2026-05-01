@@ -6,6 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.earthcomputer.bingoextras.BingoExtras;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.food.FoodConstants;
 
@@ -23,7 +24,7 @@ public final class SetEntityValCommand {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literal("setentityval")
-            .requires(source -> source.hasPermission(2))
+            .requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
             .then(literal("health")
                 .then(argument("entities", entities())
                     .then(argument("health", floatArg(0))

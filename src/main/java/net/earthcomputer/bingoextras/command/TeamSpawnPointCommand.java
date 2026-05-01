@@ -11,6 +11,7 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.network.protocol.game.ClientboundSetDefaultSpawnPositionPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.scores.PlayerTeam;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,7 +25,7 @@ public final class TeamSpawnPointCommand {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literal("teamspawnpoint")
-            .requires(source -> source.hasPermission(2))
+            .requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
             .then(argument("team", team())
                 .executes(ctx -> setTeamSpawnPoint(ctx.getSource(), getTeam(ctx, "team"), null))
                 .then(argument("pos", blockPos())

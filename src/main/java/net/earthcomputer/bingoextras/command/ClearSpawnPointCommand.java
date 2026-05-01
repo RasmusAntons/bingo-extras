@@ -6,6 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.earthcomputer.bingoextras.BingoExtras;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 
 import static net.minecraft.commands.Commands.*;
 
@@ -15,7 +16,7 @@ public final class ClearSpawnPointCommand {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literal("clearspawnpoint")
-            .requires(source -> source.hasPermission(2))
+            .requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
             .executes(ctx -> clearSpawnPoint(ctx.getSource())));
     }
 

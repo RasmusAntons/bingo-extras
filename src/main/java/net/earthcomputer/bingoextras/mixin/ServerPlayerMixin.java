@@ -34,8 +34,8 @@ public abstract class ServerPlayerMixin extends Player implements ServerPlayerEx
         super(level, gameProfile);
     }
 
-    @ModifyVariable(method = "adjustSpawnLocation", at = @At(value = "HEAD"), argsOnly = true)
-    private BlockPos applyTeamSpawnPos(BlockPos original) {
+    @ModifyVariable(method = "adjustSpawnLocation", at = @At(value = "HEAD"), argsOnly = true, name = "spawnSuggestion")
+    private BlockPos applyTeamSpawnPos(BlockPos spawnSuggestion) {
         PlayerTeam team = getTeam();
         if (team != null) {
             GlobalPos teamSpawnPos = PlayerTeamExt.getTeamSpawnPos(team);
@@ -44,7 +44,7 @@ public abstract class ServerPlayerMixin extends Player implements ServerPlayerEx
             }
         }
 
-        return original;
+        return spawnSuggestion;
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("RETURN"))

@@ -9,14 +9,16 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.StatType;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
 import java.util.Collection;
@@ -42,7 +44,7 @@ public final class SetStatCommand {
     @SuppressWarnings("unchecked")
     private static <T> void registerStatType(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context, StatType<T> statType) {
         dispatcher.register(literal("setstat")
-            .requires(source -> source.hasPermission(2))
+            .requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
             .then(argument("players", players())
                 .then(literal(getName(statType))
                     .then(argument("stat", resource(context, statType.getRegistry().key()))
@@ -56,7 +58,7 @@ public final class SetStatCommand {
     }
 
     private static String getName(StatType<?> statType) {
-        ResourceLocation key = BuiltInRegistries.STAT_TYPE.getKey(statType);
+        Identifier key = BuiltInRegistries.STAT_TYPE.getKey(statType);
         if (key == null) {
             return "null";
         } else {
@@ -72,11 +74,11 @@ public final class SetStatCommand {
 
         MutableComponent statName;
         if (stat.getType() == Stats.CUSTOM) {
-            statName = Component.translatable(((ResourceLocation) stat.getValue()).toLanguageKey("stat"));
+            statName = Component.translatable(((Identifier) stat.getValue()).toLanguageKey("stat"));
         } else if (isRegistry(stat, Registries.BLOCK)) {
             statName = stat.getType().getDisplayName().copy().append(" ").append(((Block) stat.getValue()).getName());
         } else if (isRegistry(stat, Registries.ITEM)) {
-            statName = stat.getType().getDisplayName().copy().append(" ").append(((Item) stat.getValue()).getName());
+            statName = stat.getType().getDisplayName().copy().append(" ").append(new ItemStack((Item) stat.getValue()).getItemName());
         } else if (isRegistry(stat, Registries.ENTITY_TYPE)) {
             statName = stat.getType().getDisplayName().copy().append(" ").append(((EntityType<?>) stat.getValue()).getDescription());
         } else {
