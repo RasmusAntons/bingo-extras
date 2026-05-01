@@ -12,7 +12,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerLevel.class)
 public abstract class ServerLevelMixin implements ServerLevelExt_Fantasy {
@@ -27,6 +26,9 @@ public abstract class ServerLevelMixin implements ServerLevelExt_Fantasy {
     @Unique
     @Nullable
     private ServerLevel originalLevel = null;
+
+    @Unique
+    private boolean syncWeatherFromOriginal = true;
 
     @Override
     @Nullable
@@ -50,9 +52,14 @@ public abstract class ServerLevelMixin implements ServerLevelExt_Fantasy {
         this.originalLevel = level;
     }
 
+    @Override
+    public void bingoExtras$setSyncWeatherFromOriginal(boolean syncWeatherFromOriginal) {
+        this.syncWeatherFromOriginal = syncWeatherFromOriginal;
+    }
+
     @Inject(method = "advanceWeatherCycle", at = @At(value = "FIELD", target = "Lnet/minecraft/server/level/ServerLevel;oThunderLevel:F", ordinal = 0, opcode = Opcodes.PUTFIELD))
     private void copyWeatherFromOriginal(CallbackInfo ci) {
-        if (originalLevel != null) {
+        if (originalLevel != null && syncWeatherFromOriginal) {
             WeatherData originalData = originalLevel.getWeatherData();
             WeatherData ourData = getWeatherData();
             ourData.setClearWeatherTime(originalData.getClearWeatherTime());
@@ -63,10 +70,8 @@ public abstract class ServerLevelMixin implements ServerLevelExt_Fantasy {
         }
     }
 
-    @Inject(method = "canSleepThroughNights", at = @At("HEAD"), cancellable = true)
-    private void preventSleepingInSubworlds(CallbackInfoReturnable<Boolean> cir) {
-        if (originalLevel != null) {
-            cir.setReturnValue(false);
-        }
+    @Inject(method = "resetWeatherCycle", at = @At("HEAD"))
+    private void onResetWeatherCycle(CallbackInfo ci) {
+        syncWeatherFromOriginal = false;
     }
 }

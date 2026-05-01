@@ -15,6 +15,8 @@ public interface ServerLevelExt_Fantasy {
 
     void bingoExtras$setOriginalLevel(@Nullable ServerLevel level);
 
+    void bingoExtras$setSyncWeatherFromOriginal(boolean syncWeatherFromOriginal);
+
     @Nullable
     static PlayerTeam getTeam(ServerLevel level) {
         return ((ServerLevelExt_Fantasy) level).bingoExtras$getTeam();

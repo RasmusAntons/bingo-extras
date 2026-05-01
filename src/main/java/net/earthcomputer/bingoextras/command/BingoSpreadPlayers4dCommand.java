@@ -114,5 +114,9 @@ public final class BingoSpreadPlayers4dCommand {
             }
             entity.teleportTo(destLevel, destPos.getX() + 0.5, destPos.getY(), destPos.getZ() + 0.5, Set.of(), entity.getYRot(), entity.getXRot(), true);
         }
+
+        for (ServerLevel l : source.getServer().getAllLevels()) {
+            ((ServerLevelExt_Fantasy) l).bingoExtras$setSyncWeatherFromOriginal(true);
+        }
     }
 }
