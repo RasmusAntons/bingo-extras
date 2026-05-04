@@ -9,6 +9,8 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityLevelChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
@@ -25,6 +27,9 @@ public class BingoExtras implements ModInitializer {
         ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> FullBrightCommand.sendUpdate(newPlayer, true));
         ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL.register((player, origin, destination) -> FullBrightCommand.sendUpdate(player, true));
         ServerPlayerEvents.COPY_FROM.register((oldPlayer, newPlayer, alive) -> ServerPlayerExt.setFullbright(newPlayer, ServerPlayerExt.isFullbright(oldPlayer)));
+
+        ServerLifecycleEvents.SERVER_STARTED.register(FreezePeriod::onStartup);
+        ServerTickEvents.START_SERVER_TICK.register(FreezePeriod::onTick);
     }
 
     public static MutableComponent translatable(@Translatable String translationKey) {
