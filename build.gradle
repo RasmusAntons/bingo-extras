@@ -22,10 +22,12 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    include implementation ("dev.xpple:cubiomes:${project.cubiomes_version}")
     include implementation("dev.xpple:betterconfig-fabric:${project.betterconfig_version}")
 
     include implementation('com.github.Chocohead:Fabric-ASM:v2.3')
     implementation files('libs/fantasy-0.8.0-beta.1+26.1.1.jar')
+    implementation files('libs/bingo-1.1.23+enigmatics.jar')
 
     compileOnly 'com.demonwav.mcdev:annotations:2.1.0'
 }

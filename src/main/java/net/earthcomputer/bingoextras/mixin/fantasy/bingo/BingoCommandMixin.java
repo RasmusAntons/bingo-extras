@@ -1,8 +1,10 @@
 package net.earthcomputer.bingoextras.mixin.fantasy.bingo;
 
 import com.mojang.brigadier.context.CommandContext;
+import net.earthcomputer.bingoextras.BingoExtras;
 import net.earthcomputer.bingoextras.FantasyUtil;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.scores.PlayerTeam;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
@@ -18,5 +20,14 @@ public class BingoCommandMixin {
         for (PlayerTeam team : context.getSource().getServer().getScoreboard().getPlayerTeams()) {
             FantasyUtil.destroyTeamSpecificLevels(team);
         }
+        if (BingoExtras.seedfindGame != null) {
+            FantasyUtil.destroyGameSpecificLevels(BingoExtras.seedfindGame);
+            BingoExtras.seedfindGame = null;
+        }
+        MinecraftServer server = context.getSource().getServer();
+        server.getCommands().performPrefixedCommand(
+                context.getSource().getServer().createCommandSourceStack(),
+                "function bingo:on_reset"
+        );
     }
 }

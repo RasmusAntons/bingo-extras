@@ -28,6 +28,10 @@ public abstract class ServerLevelMixin implements ServerLevelExt_Fantasy {
     private ServerLevel originalLevel = null;
 
     @Unique
+    @Nullable
+    private ServerLevel parentLevel = null;
+
+    @Unique
     private boolean syncWeatherFromOriginal = true;
 
     @Override
@@ -50,6 +54,17 @@ public abstract class ServerLevelMixin implements ServerLevelExt_Fantasy {
     @Override
     public void bingoExtras$setOriginalLevel(@Nullable ServerLevel level) {
         this.originalLevel = level;
+    }
+
+    @Override
+    @Nullable
+    public ServerLevel bingoExtras$getParentLevel() {
+        return parentLevel;
+    }
+
+    @Override
+    public void bingoExtras$setParentLevel(@Nullable ServerLevel level) {
+        this.parentLevel = level;
     }
 
     @Override

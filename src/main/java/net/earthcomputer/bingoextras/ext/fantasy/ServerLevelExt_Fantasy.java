@@ -13,6 +13,11 @@ public interface ServerLevelExt_Fantasy {
     @Nullable
     ServerLevel bingoExtras$getOriginalLevel();
 
+    @Nullable
+    ServerLevel bingoExtras$getParentLevel();
+
+    void bingoExtras$setParentLevel(@Nullable ServerLevel level);
+
     void bingoExtras$setOriginalLevel(@Nullable ServerLevel level);
 
     void bingoExtras$setSyncWeatherFromOriginal(boolean syncWeatherFromOriginal);
@@ -25,6 +30,11 @@ public interface ServerLevelExt_Fantasy {
     @Nullable
     static ServerLevel getOriginalLevel(ServerLevel level) {
         return ((ServerLevelExt_Fantasy) level).bingoExtras$getOriginalLevel();
+    }
+
+    @Nullable
+    static ServerLevel getParentLevel(ServerLevel level) {
+        return ((ServerLevelExt_Fantasy) level).bingoExtras$getParentLevel();
     }
 
     static void initializeTeam(ServerLevel level, @Nullable PlayerTeam team, @Nullable ServerLevel originalLevel) {

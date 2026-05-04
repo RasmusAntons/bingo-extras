@@ -22,6 +22,7 @@ public final class BingoExtrasCommands {
 
         if (FabricLoader.getInstance().isModLoaded("fantasy")) {
             BingoSpreadPlayers4dCommand.register(dispatcher, context);
+            BingoSpreadPlayersSeedfindCommand.register(dispatcher, context);
         }
     }
 }
