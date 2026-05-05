@@ -1,7 +1,10 @@
 package net.earthcomputer.bingoextras.mixin.bingo;
 
+import com.mojang.brigadier.context.CommandContext;
 import net.earthcomputer.bingoextras.ext.bingo.BingoGameExt;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
@@ -28,6 +31,9 @@ public class BingoGameMixin implements BingoGameExt {
 
     @Unique
     private final List<Component> extraMessages = new ArrayList<>();
+
+    @Unique
+    private final Map<Identifier, CommandContext<CommandSourceStack>> gameRules = new HashMap<>();
 
     @Override
     public long bingoExtras$getSeed() {
@@ -57,5 +63,10 @@ public class BingoGameMixin implements BingoGameExt {
     @Override
     public Map<ResourceKey<Level>, RuntimeLevelHandle> bingoExtras$getGameSpecificLevels() {
         return gameSpecificLevels;
+    }
+
+    @Override
+    public Map<Identifier, CommandContext<CommandSourceStack>> bingoExtras$getGameRules() {
+        return gameRules;
     }
 }

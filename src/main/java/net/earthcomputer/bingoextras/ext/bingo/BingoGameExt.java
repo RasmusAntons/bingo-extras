@@ -4,7 +4,9 @@ import com.mojang.brigadier.context.CommandContext;
 import io.github.gaming32.bingo.game.BingoGame;
 import net.earthcomputer.bingoextras.ext.fantasy.ServerLevelExt_Fantasy;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -12,6 +14,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.dimension.end.EnderDragonFight;
+import net.minecraft.world.level.gamerules.GameRule;
 import net.minecraft.world.level.gamerules.GameRules;
 import xyz.nucleoid.fantasy.Fantasy;
 import xyz.nucleoid.fantasy.RuntimeLevelConfig;
@@ -32,6 +35,8 @@ public interface BingoGameExt {
     void bingo_extras$setGameSpecificWorldSeed(long seed);
 
     List<Component> bingo_extras$getExtraMessages();
+
+    Map<Identifier, CommandContext<CommandSourceStack>> bingoExtras$getGameRules();
 
     static long getSeed(Object bingoGame) {
         return ((BingoGameExt) bingoGame).bingoExtras$getSeed();
@@ -55,6 +60,20 @@ public interface BingoGameExt {
                             .setMirrorOverworldGameRules(false)
                             .setGameTime(0)
             );
+
+            GameRules gameRules = handle.asLevel().getGameRules();
+            for (Map.Entry<Identifier, CommandContext<CommandSourceStack>> entry : ((BingoGameExt) game).bingoExtras$getGameRules().entrySet()) {
+                GameRule<?> gameRule = BuiltInRegistries.GAME_RULE.get(entry.getKey()).orElseThrow().value();
+                CommandContext<CommandSourceStack> ctx = entry.getValue();
+                if (gameRule.valueClass().equals(Integer.class)) {
+                    GameRule<Integer>  gameRuleInteger = (GameRule<Integer>) gameRule;
+                    gameRules.set(gameRuleInteger, ctx.getArgument("value", Integer.class), server);
+                } else if (gameRule.valueClass().equals(Boolean.class)) {
+                    GameRule<Boolean>  gameRuleBoolean = (GameRule<Boolean>) gameRule;
+                    gameRules.set(gameRuleBoolean, ctx.getArgument("value", Boolean.class), server);
+                }
+            }
+
             ((ServerLevelExt_Fantasy) handle.asLevel()).bingoExtras$setParentLevel(parentLevel);
             if (parentLevel.dimension() == Level.END && parentLevel.dimensionTypeRegistration().is(BuiltinDimensionTypes.END)) {
                 handle.asLevel().setDragonFight(EnderDragonFight.createDefault());
