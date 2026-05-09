@@ -4,6 +4,7 @@ import com.mojang.brigadier.context.CommandContext;
 import io.github.gaming32.bingo.game.BingoGame;
 import net.earthcomputer.bingoextras.ext.fantasy.ServerLevelExt_Fantasy;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -76,7 +77,9 @@ public interface BingoGameExt {
 
             ((ServerLevelExt_Fantasy) handle.asLevel()).bingoExtras$setParentLevel(parentLevel);
             if (parentLevel.dimension() == Level.END && parentLevel.dimensionTypeRegistration().is(BuiltinDimensionTypes.END)) {
-                handle.asLevel().setDragonFight(EnderDragonFight.createDefault());
+                var dragonFight = EnderDragonFight.createDefault();
+                dragonFight.init(handle.asLevel(), handle.asLevel().getSeed(), BlockPos.ZERO);
+                handle.asLevel().setDragonFight(dragonFight);
             }
             return handle;
         }).asLevel();
