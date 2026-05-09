@@ -123,7 +123,7 @@ public class BingoSpreadPlayersSeedfindCommand {
         RandomSource rand = RandomSource.create();
         Util.shuffle(groups, rand);
         Vec2[] groupSpawns = getGroupSpawnPositions(groups.size(), distance);
-        long seed = findSeed(activeGame, mapSize, groupSpawns, sameBiome, excludedBiomes, rand, source.registryAccess());
+        long seed = findSeed(activeGame, mapSize, groupSpawns, sameBiome, dimension.dimension(), excludedBiomes, rand, source.registryAccess());
 
         ((BingoGameExt) activeGame).bingo_extras$setGameSpecificWorldSeed(seed);
         teleportPlayers(source, activeGame, groupSpawns, groups, dimension.dimension(), spread, rand);
@@ -167,11 +167,21 @@ public class BingoSpreadPlayersSeedfindCommand {
         return requiredBiomes;
     }
 
+    private static int cubiomesDimension(ResourceKey<Level> dimension) {
+        if (dimension == Level.NETHER) {
+            return Cubiomes.DIM_NETHER();
+        } else if (dimension == Level.END) {
+            return Cubiomes.DIM_END();
+        }
+        return Cubiomes.DIM_OVERWORLD();
+    }
+
     private static long findSeed(
             BingoGame game,
             int mapSize,
             Vec2[] spawnPositions,
             boolean sameBiome,
+            ResourceKey<Level> startDimension,
             Predicate<Holder<Biome>> excludedBiomes,
             RandomSource rand,
             RegistryAccess access
@@ -187,7 +197,7 @@ public class BingoSpreadPlayersSeedfindCommand {
                 --attempts;
                 seed = rand.nextLong();
                 System.out.printf("trying seed %dl\n", seed);
-                Cubiomes.applySeed(generator, Cubiomes.DIM_OVERWORLD(), seed);
+                Cubiomes.applySeed(generator, cubiomesDimension(startDimension), seed);
                 int chosenBiome = Cubiomes.none();
                 for (Vec2 spawnPosition : spawnPositions) {
                     extraMessages.clear();
