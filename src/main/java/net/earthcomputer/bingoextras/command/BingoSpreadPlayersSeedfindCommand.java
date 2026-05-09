@@ -37,6 +37,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Relative;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -45,7 +46,6 @@ import org.joml.Vector2d;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.ValueLayout;
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -59,6 +59,8 @@ import static net.earthcomputer.bingoextras.CubiomesUtils.CUBIOMES_MC_VERSION;
 import static net.earthcomputer.bingoextras.command.BingoSpreadPlayersCommand.*;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
+import static net.minecraft.commands.arguments.DimensionArgument.dimension;
+import static net.minecraft.commands.arguments.DimensionArgument.getDimension;
 import static net.minecraft.commands.arguments.EntityArgument.entities;
 import static net.minecraft.commands.arguments.EntityArgument.getEntities;
 import static net.minecraft.commands.arguments.ResourceOrTagArgument.getResourceOrTag;
@@ -77,17 +79,19 @@ public class BingoSpreadPlayersSeedfindCommand {
                                         .then(argument("respectTeams", bool())
                                                 .then(argument("targets", entities())
                                                         .then(argument("sameBiome", bool())
-                                                                .then(argument("excludedBiomes", resourceOrTag(buildContext, Registries.BIOME))
-                                                                        .executes(ctx -> bingoSpreadPlayers(
-                                                                                ctx.getSource(),
-                                                                                getDouble(ctx, "distance"),
-                                                                                getDouble(ctx, "spread"),
-                                                                                getInteger(ctx, "mapSize"),
-                                                                                getBool(ctx, "respectTeams"),
-                                                                                getEntities(ctx, "targets"),
-                                                                                getBool(ctx, "sameBiome"),
-                                                                                getResourceOrTag(ctx, "excludedBiomes", Registries.BIOME)
-                                                                        ))))))))));
+                                                                .then(argument("startDimension", dimension())
+                                                                        .then(argument("excludedBiomes", resourceOrTag(buildContext, Registries.BIOME))
+                                                                                .executes(ctx -> bingoSpreadPlayers(
+                                                                                        ctx.getSource(),
+                                                                                        getDouble(ctx, "distance"),
+                                                                                        getDouble(ctx, "spread"),
+                                                                                        getInteger(ctx, "mapSize"),
+                                                                                        getBool(ctx, "respectTeams"),
+                                                                                        getEntities(ctx, "targets"),
+                                                                                        getBool(ctx, "sameBiome"),
+                                                                                        getDimension(ctx, "startDimension"),
+                                                                                        getResourceOrTag(ctx, "excludedBiomes", Registries.BIOME)
+                                                                                )))))))))));
     }
 
     private static int bingoSpreadPlayers(
@@ -98,6 +102,7 @@ public class BingoSpreadPlayersSeedfindCommand {
             boolean respectTeams,
             Collection<? extends Entity> entities,
             boolean sameBiome,
+            ServerLevel dimension,
             Predicate<Holder<Biome>> excludedBiomes
     ) throws CommandSyntaxException {
         List<List<Entity>> groups = groupEntities(entities, respectTeams);
@@ -121,7 +126,7 @@ public class BingoSpreadPlayersSeedfindCommand {
         long seed = findSeed(activeGame, mapSize, groupSpawns, sameBiome, excludedBiomes, rand, source.registryAccess());
 
         ((BingoGameExt) activeGame).bingo_extras$setGameSpecificWorldSeed(seed);
-        teleportPlayers(source, activeGame, groupSpawns, groups, spread, rand);
+        teleportPlayers(source, activeGame, groupSpawns, groups, dimension.dimension(), spread, rand);
 
         for (Component extraMessage : ((BingoGameExt) activeGame).bingo_extras$getExtraMessages()) {
             for (ServerPlayer player : source.getServer().getPlayerList().getPlayers()) {
@@ -181,6 +186,7 @@ public class BingoSpreadPlayersSeedfindCommand {
             while (seed == 0 && attempts > 0) {
                 --attempts;
                 seed = rand.nextLong();
+                System.out.printf("trying seed %dl\n", seed);
                 Cubiomes.applySeed(generator, Cubiomes.DIM_OVERWORLD(), seed);
                 int chosenBiome = Cubiomes.none();
                 for (Vec2 spawnPosition : spawnPositions) {
@@ -261,6 +267,8 @@ public class BingoSpreadPlayersSeedfindCommand {
                     }
                 }
             }
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
         }
         if (seed == 0)
             throw FAILED_TO_FIND_SEED_EXCEPTION.create();
@@ -278,10 +286,10 @@ public class BingoSpreadPlayersSeedfindCommand {
         return res;
     }
 
-    private static void teleportPlayers(CommandSourceStack source, BingoGame activeGame, Vec2[] groupSpawns, List<List<Entity>> groups, double spread, RandomSource rand) {
+    private static void teleportPlayers(CommandSourceStack source, BingoGame activeGame, Vec2[] groupSpawns, List<List<Entity>> groups, ResourceKey<Level> dimension, double spread, RandomSource rand) {
         MinecraftServer server = source.getServer();
 
-        ServerLevel gameLevel = BingoGameExt.getGameSpecificLevel(server, activeGame, server.overworld().dimension());
+        ServerLevel gameLevel = BingoGameExt.getGameSpecificLevel(server, activeGame, dimension);
 
         for (int i = 0; i < groups.size(); ++i) {
             List<Entity> entities = groups.get(i);
