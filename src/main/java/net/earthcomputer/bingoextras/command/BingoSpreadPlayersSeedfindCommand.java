@@ -217,7 +217,7 @@ public class BingoSpreadPlayersSeedfindCommand {
                 int chosenBiome = Cubiomes.none();
                 for (Vec2 spawnPosition : spawnPositions) {
                     extraMessages.clear();
-                    int biomeID = Cubiomes.getBiomeAt(generator, 4, (int) spawnPosition.x, 63, (int) spawnPosition.y);
+                    int biomeID = Cubiomes.getBiomeAt(generator, 4, (int) spawnPosition.x / 4, 63, (int) spawnPosition.y / 4);
                     // check if all players spawn in the same biome
                     if (sameBiome) {
                         if (chosenBiome == Cubiomes.none()) {
