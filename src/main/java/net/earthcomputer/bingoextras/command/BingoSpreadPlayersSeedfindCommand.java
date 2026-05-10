@@ -192,6 +192,21 @@ public class BingoSpreadPlayersSeedfindCommand {
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment generator = Generator.allocate(arena);
             Cubiomes.setupGenerator(generator, Cubiomes.MC_1_21_11(), 0);
+            int rChunks = mapSize / 16;
+            MemorySegment range = Range.allocate(arena);
+            Range.scale(range, 16);
+            Range.sx(range, 2 * rChunks);
+            Range.sz(range, 2 * rChunks);
+            Range.sy(range, 1);
+            Range.x(range, -rChunks);
+            Range.z(range, -rChunks);
+            Range.y(range, 63);
+            MemorySegment filter = BiomeFilter.allocate(arena);
+            final Map<ResourceKey<DimensionType>, Set<Holder<Biome>>> requiredBiomes = getRequiredBiomes(access, game);
+            final Map<ResourceKey<DimensionType>, Integer> dimensions = Map.of(
+                    BuiltinDimensionTypes.OVERWORLD, Cubiomes.DIM_OVERWORLD(),
+                    BuiltinDimensionTypes.NETHER, Cubiomes.DIM_NETHER()
+            );
             iterSeeds:
             while (seed == 0 && attempts > 0) {
                 --attempts;
@@ -201,7 +216,7 @@ public class BingoSpreadPlayersSeedfindCommand {
                 int chosenBiome = Cubiomes.none();
                 for (Vec2 spawnPosition : spawnPositions) {
                     extraMessages.clear();
-                    int biomeID = Cubiomes.getBiomeAt(generator, 1, (int) spawnPosition.x, 63, (int) spawnPosition.y);
+                    int biomeID = Cubiomes.getBiomeAt(generator, 4, (int) spawnPosition.x, 63, (int) spawnPosition.y);
                     // check if all players spawn in the same biome
                     if (sameBiome) {
                         if (chosenBiome == Cubiomes.none()) {
@@ -221,33 +236,15 @@ public class BingoSpreadPlayersSeedfindCommand {
                     }
                     // check if required biomes for all goals exist
                     if (mapSize > 0) {
-                        Map<ResourceKey<DimensionType>, Set<Holder<Biome>>> requiredBiomes = getRequiredBiomes(access, game);
-                        Map<ResourceKey<DimensionType>, Integer> dimensions = Map.of(
-                                BuiltinDimensionTypes.OVERWORLD, Cubiomes.DIM_OVERWORLD(),
-                                BuiltinDimensionTypes.NETHER, Cubiomes.DIM_NETHER()
-                        );
-                        int rChunks = mapSize / 16;
                         for (Map.Entry<ResourceKey<DimensionType>, Integer> entry : dimensions.entrySet()) {
                             Set<Holder<Biome>> biomesForDimension = requiredBiomes.get(entry.getKey());
                             if (!biomesForDimension.isEmpty()) {
-                                MemorySegment range = Range.allocate(arena);
-                                Range.scale(range, 16);
-                                Range.sx(range, 2 * rChunks);
-                                Range.sz(range, 2 * rChunks);
-                                Range.sy(range, 1);
-                                Range.x(range, -rChunks);
-                                Range.z(range, -rChunks);
-                                Range.y(range, 63);
-
                                 MemorySegment requiredBiomeIDs = arena.allocate(Cubiomes.C_INT, biomesForDimension.size());
                                 long i = 0;
                                 for (var b: biomesForDimension) {
                                     requiredBiomeIDs.set(Cubiomes.C_INT, i++, CubiomesUtils.biomeToBiomeID(b));
                                 }
-
-                                MemorySegment filter = BiomeFilter.allocate(arena);
                                 Cubiomes.setupBiomeFilter(filter, CUBIOMES_MC_VERSION, 0, requiredBiomeIDs, biomesForDimension.size(), MemorySegment.NULL, 0, MemorySegment.NULL, 0);
-
                                 int hasBiome = Cubiomes.checkForBiomes(generator, MemorySegment.NULL, range, entry.getValue(), seed, filter, MemorySegment.NULL);
                                 if (hasBiome == 0) {
                                     // System.out.printf("skipping seed %d because it is missing biomes in %s\n", seed, entry.getKey().identifier());
