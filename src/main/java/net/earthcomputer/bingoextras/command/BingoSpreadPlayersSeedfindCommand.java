@@ -129,6 +129,7 @@ public class BingoSpreadPlayersSeedfindCommand {
         teleportPlayers(source, activeGame, groupSpawns, groups, dimension.dimension(), spread, rand);
 
         for (Component extraMessage : ((BingoGameExt) activeGame).bingo_extras$getExtraMessages()) {
+            System.out.println(extraMessage.getString());
             for (ServerPlayer player : source.getServer().getPlayerList().getPlayers()) {
                 player.sendSystemMessage(extraMessage);
             }
@@ -187,7 +188,7 @@ public class BingoSpreadPlayersSeedfindCommand {
             RegistryAccess access
     ) throws CommandSyntaxException {
         long seed = 0;
-        int attempts = 1000;
+        int attempts = 2500;
         List<Component> extraMessages = new ArrayList<>();
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment generator = Generator.allocate(arena);
@@ -211,7 +212,7 @@ public class BingoSpreadPlayersSeedfindCommand {
             while (seed == 0 && attempts > 0) {
                 --attempts;
                 seed = rand.nextLong();
-                System.out.printf("trying seed %dl\n", seed);
+                // System.out.printf("trying seed %dl\n", seed);
                 Cubiomes.applySeed(generator, cubiomesDimension(startDimension), seed);
                 int chosenBiome = Cubiomes.none();
                 for (Vec2 spawnPosition : spawnPositions) {
@@ -242,7 +243,7 @@ public class BingoSpreadPlayersSeedfindCommand {
                                 MemorySegment requiredBiomeIDs = arena.allocate(Cubiomes.C_INT, biomesForDimension.size());
                                 long i = 0;
                                 for (var b: biomesForDimension) {
-                                    requiredBiomeIDs.set(Cubiomes.C_INT, i++, CubiomesUtils.biomeToBiomeID(b));
+                                    requiredBiomeIDs.set(Cubiomes.C_INT, i++ * Cubiomes.C_INT.byteSize(), CubiomesUtils.biomeToBiomeID(b));
                                 }
                                 Cubiomes.setupBiomeFilter(filter, CUBIOMES_MC_VERSION, 0, requiredBiomeIDs, biomesForDimension.size(), MemorySegment.NULL, 0, MemorySegment.NULL, 0);
                                 int hasBiome = Cubiomes.checkForBiomes(generator, MemorySegment.NULL, range, entry.getValue(), seed, filter, MemorySegment.NULL);
