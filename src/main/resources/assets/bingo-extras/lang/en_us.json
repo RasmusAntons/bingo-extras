@@ -1,14 +1,17 @@
 {
-  "bingo_extras.bingospreadplayers.failedToSpread": "Failed to spread players",
+  "bingo_extras.bingogamerule.query": "Bingo gamerule %s is currently set to: %s",
+  "bingo_extras.bingogamerule.set": "Bingo gamerule %s is now set to: %s",
   "bingo_extras.bingospreadplayers.failedToFindSeed": "Failed to find a suitable seed",
+  "bingo_extras.bingospreadplayers.failedToSpread": "Failed to spread players",
   "bingo_extras.bingospreadplayers.noRunningGame": "No running game",
-  "bingo_extras.bingospreadplayers.success": "Successfully spread players",
-  "bingo_extras.clearspawnpoint.success": "Cleared your spawn point",
-  "bingo_extras.bingospreadplayers.seedfind_biomes": "These biomes are within %d blocks from 0 0 in the %s:",
   "bingo_extras.bingospreadplayers.seedfind_biome": "\n  - %s",
-  "bingo_extras.fullbright.success": "Toggled fullbright",
+  "bingo_extras.bingospreadplayers.seedfind_biomes": "These biomes are within %d blocks from 0 0 in the %s:",
+  "bingo_extras.bingospreadplayers.success": "Successfully spread players",
+  "bingo_extras.cancel_freeze.success": "Freeze period canceled",
+  "bingo_extras.clearspawnpoint.success": "Cleared your spawn point",
   "bingo_extras.freeze.success": "Froze players for %d seconds",
   "bingo_extras.freeze.time": "%d s",
+  "bingo_extras.fullbright.success": "Toggled fullbright",
   "bingo_extras.gamemode.playing": "Cannot change gamemode while playing bingo",
   "bingo_extras.setentityval.exhaustion.success": "Set the exhaustion of %s players to %s",
   "bingo_extras.setentityval.food.success": "Set the food level of %s players to %s",
@@ -16,7 +19,5 @@
   "bingo_extras.setentityval.saturation.success": "Set the saturation of %s players to %s",
   "bingo_extras.setstat.success": "Set stat %s of %s players to %s",
   "bingo_extras.teamspawnpoint.clear.success": "Cleared the spawn point of team %s",
-  "bingo_extras.teamspawnpoint.set.success": "Set the spawn point of team %s to (%s, %s, %s)",
-  "bingo_extras.bingogamerule.query": "Bingo gamerule %s is currently set to: %s",
-  "bingo_extras.bingogamerule.set": "Bingo gamerule %s is now set to: %s"
+  "bingo_extras.teamspawnpoint.set.success": "Set the spawn point of team %s to (%s, %s, %s)"
 }

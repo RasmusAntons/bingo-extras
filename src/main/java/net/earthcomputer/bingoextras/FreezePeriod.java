@@ -65,6 +65,10 @@ public class FreezePeriod {
         frozenPlayers.put(player.getUUID(), ticks);
     }
 
+    public void unsetFreezePeriod(ServerPlayer player) {
+        frozenPlayers.remove(player.getUUID());
+    }
+
     public boolean isInFreezePeriod(ServerPlayer player) {
         return frozenPlayers.containsKey(player.getUUID());
     }

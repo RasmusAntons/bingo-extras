@@ -37,7 +37,11 @@ public final class FreezePlayersCommand {
                                                 getInteger(ctx, "time"),
                                                 getBool(ctx, "tickFreeze")
                                         ))
-                                ))));
+                                ))
+                        .then(literal("cancel")
+                                .executes(ctx -> cancelFreezePlayers(ctx.getSource(), getPlayers(ctx, "targets")))
+                        )
+                ));
     }
 
     private static int freezePlayers(CommandSourceStack source, Collection<ServerPlayer> players, int time, boolean tickFreeze) {
@@ -49,6 +53,16 @@ public final class FreezePlayersCommand {
             source.getServer().tickRateManager().setFrozen(true);
         }
         source.sendSuccess(() -> BingoExtras.translatable("bingo_extras.freeze.success", time / SharedConstants.TICKS_PER_SECOND), true);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int cancelFreezePlayers(CommandSourceStack source, Collection<ServerPlayer> players) {
+        for (ServerPlayer player : players) {
+            player.setGameMode(GameType.ADVENTURE);
+            FreezePeriod.INSTANCE.unsetFreezePeriod(player);
+        }
+        source.getServer().tickRateManager().setFrozen(false);
+        source.sendSuccess(() -> BingoExtras.translatable("bingo_extras.cancel_freeze.success"), true);
         return Command.SINGLE_SUCCESS;
     }
 }
