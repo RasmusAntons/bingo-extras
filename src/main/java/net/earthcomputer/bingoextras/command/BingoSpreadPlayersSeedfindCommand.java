@@ -48,6 +48,7 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
@@ -94,6 +95,9 @@ public class BingoSpreadPlayersSeedfindCommand {
                                                                                 )))))))))));
     }
 
+    record SeedfinderResult(long seed, Vec2[] spawnLocations) {
+    }
+
     private static int bingoSpreadPlayers(
             CommandSourceStack source,
             double distance,
@@ -122,11 +126,10 @@ public class BingoSpreadPlayersSeedfindCommand {
 
         RandomSource rand = RandomSource.create();
         Util.shuffle(groups, rand);
-        Vec2[] groupSpawns = getGroupSpawnPositions(groups.size(), distance);
-        long seed = findSeed(activeGame, mapSize, groupSpawns, sameBiome, dimension.dimension(), excludedBiomes, rand, source.registryAccess());
+        SeedfinderResult seed = findSeed(activeGame, mapSize, groups.size(), distance, sameBiome, dimension.dimension(), excludedBiomes, rand, source.registryAccess());
 
-        ((BingoGameExt) activeGame).bingo_extras$setGameSpecificWorldSeed(seed);
-        teleportPlayers(source, activeGame, groupSpawns, groups, dimension.dimension(), spread, rand);
+        ((BingoGameExt) activeGame).bingo_extras$setGameSpecificWorldSeed(seed.seed());
+        teleportPlayers(source, activeGame, seed.spawnLocations(), groups, dimension.dimension(), spread, rand);
 
         for (Component extraMessage : ((BingoGameExt) activeGame).bingo_extras$getExtraMessages()) {
             System.out.println(extraMessage.getString());
@@ -177,10 +180,11 @@ public class BingoSpreadPlayersSeedfindCommand {
         return Cubiomes.DIM_OVERWORLD();
     }
 
-    private static long findSeed(
+    private static SeedfinderResult findSeed(
             BingoGame game,
             int mapSize,
-            Vec2[] spawnPositions,
+            int nGroups,
+            double distance,
             boolean sameBiome,
             ResourceKey<Level> startDimension,
             Predicate<Holder<Biome>> excludedBiomes,
@@ -189,10 +193,11 @@ public class BingoSpreadPlayersSeedfindCommand {
     ) throws CommandSyntaxException {
         long seed = 0;
         int attempts = 2500;
+        Vec2[] spawnPositions = null;
         List<Component> extraMessages = new ArrayList<>();
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment generator = Generator.allocate(arena);
-            Cubiomes.setupGenerator(generator, Cubiomes.MC_1_21_11(), 0);
+            Cubiomes.setupGenerator(generator, CUBIOMES_MC_VERSION, 0);
             int rChunks = mapSize / 16;
             MemorySegment range = Range.allocate(arena);
             Range.scale(range, 16);
@@ -214,64 +219,75 @@ public class BingoSpreadPlayersSeedfindCommand {
                 seed = rand.nextLong();
                 // System.out.printf("trying seed %dl\n", seed);
                 Cubiomes.applySeed(generator, cubiomesDimension(startDimension), seed);
-                int chosenBiome = Cubiomes.none();
-                for (Vec2 spawnPosition : spawnPositions) {
-                    extraMessages.clear();
-                    int biomeID = Cubiomes.getBiomeAt(generator, 4, (int) spawnPosition.x / 4, 63, (int) spawnPosition.y / 4);
-                    // check if all players spawn in the same biome
-                    if (sameBiome) {
-                        if (chosenBiome == Cubiomes.none()) {
-                            chosenBiome = biomeID;
-                        } else if (chosenBiome != biomeID) {
-                            // System.out.printf("skipping seed %d because players would spawn in different biomes\n", seed);
-                            seed = 0;
-                            continue iterSeeds;
-                        }
-                    }
-                    // check if no players spawn in an excluded biome
-                    Holder<Biome> biome = CubiomesUtils.biomeIDToBiome(access, biomeID);
-                    if (excludedBiomes.test(biome)) {
-                        // System.out.printf("skipping seed %d because it has %s at %f %f\n", seed, Cubiomes.biome2str(CUBIOMES_MC_VERSION, biomeID).getString(0), spawnPosition.x, spawnPosition.y);
-                        seed = 0;
-                        continue iterSeeds;
-                    }
-                    // check if required biomes for all goals exist
-                    if (mapSize > 0) {
-                        for (Map.Entry<ResourceKey<DimensionType>, Integer> entry : dimensions.entrySet()) {
-                            Set<Holder<Biome>> biomesForDimension = requiredBiomes.get(entry.getKey());
-                            if (!biomesForDimension.isEmpty()) {
-                                MemorySegment requiredBiomeIDs = arena.allocate(Cubiomes.C_INT, biomesForDimension.size());
-                                long i = 0;
-                                for (var b: biomesForDimension) {
-                                    requiredBiomeIDs.set(Cubiomes.C_INT, i++ * Cubiomes.C_INT.byteSize(), CubiomesUtils.biomeToBiomeID(b));
-                                }
-                                Cubiomes.setupBiomeFilter(filter, CUBIOMES_MC_VERSION, 0, requiredBiomeIDs, biomesForDimension.size(), MemorySegment.NULL, 0, MemorySegment.NULL, 0);
-                                int hasBiome = Cubiomes.checkForBiomes(generator, MemorySegment.NULL, range, entry.getValue(), seed, filter, MemorySegment.NULL);
-                                if (hasBiome == 0) {
-                                    // System.out.printf("skipping seed %d because it is missing biomes in %s\n", seed, entry.getKey().identifier());
-                                    seed = 0;
-                                    continue iterSeeds;
-                                }
+                spawnPositions = null;
+                GroupSpawnPositionGenerator spawnPositionGenerator = new GroupSpawnPositionGenerator(nGroups, distance);
+                iterSpawns:
+                while (spawnPositions == null && spawnPositionGenerator.hasNext()) {
+                    spawnPositions = spawnPositionGenerator.getNext();
+                    int chosenBiome = Cubiomes.none();
+                    for (Vec2 spawnPosition : spawnPositions) {
+                        extraMessages.clear();
+                        int biomeID = Cubiomes.getBiomeAt(generator, 4, (int) spawnPosition.x / 4, 63, (int) spawnPosition.y / 4);
+                        // check if all players spawn in the same biome
+                        if (sameBiome) {
+                            if (chosenBiome == Cubiomes.none()) {
+                                chosenBiome = biomeID;
+                            } else if (chosenBiome != biomeID) {
+                                // System.out.printf("skipping spawn positions %s on seed %d because players would spawn in different biomes (%s vs %s)\n", Arrays.stream(spawnPositions).map(s -> String.format("(%.1f, %.1f)", s.x, s.y)).collect(Collectors.joining(", ")), seed, Cubiomes.biome2str(CUBIOMES_MC_VERSION, chosenBiome).getString(0), Cubiomes.biome2str(CUBIOMES_MC_VERSION, biomeID).getString(0));
+                                spawnPositions = null;
+                                continue iterSpawns;
                             }
                         }
+                        // check if no players spawn in an excluded biome
+                        Holder<Biome> biome = CubiomesUtils.biomeIDToBiome(access, biomeID);
+                        if (excludedBiomes.test(biome)) {
+                            // System.out.printf("skipping spawn positions %s on seed %d because it has %s at %f %f\n", Arrays.stream(spawnPositions).map(s -> String.format("(%.1f, %.1f)", s.x, s.y)).collect(Collectors.joining(", ")), seed, Cubiomes.biome2str(CUBIOMES_MC_VERSION, biomeID).getString(0), spawnPosition.x, spawnPosition.y);
+                            spawnPositions = null;
+                            continue iterSpawns;
+                        }
+                    }
+                }
+                if (spawnPositions == null) {
+                    // System.out.printf("skipping seed %d because of invalid spawn biomes\n", seed);
+                    seed = 0;
+                    continue iterSeeds;
+                }
+                // check if required biomes for all goals exist
+                if (mapSize > 0) {
+                    for (Map.Entry<ResourceKey<DimensionType>, Integer> entry : dimensions.entrySet()) {
+                        Set<Holder<Biome>> biomesForDimension = requiredBiomes.get(entry.getKey());
+                        if (!biomesForDimension.isEmpty()) {
+                            MemorySegment requiredBiomeIDs = arena.allocate(Cubiomes.C_INT, biomesForDimension.size());
+                            long i = 0;
+                            for (var b : biomesForDimension) {
+                                requiredBiomeIDs.set(Cubiomes.C_INT, i++ * Cubiomes.C_INT.byteSize(), CubiomesUtils.biomeToBiomeID(b));
+                            }
+                            Cubiomes.setupBiomeFilter(filter, CUBIOMES_MC_VERSION, 0, requiredBiomeIDs, biomesForDimension.size(), MemorySegment.NULL, 0, MemorySegment.NULL, 0);
+                            int hasBiome = Cubiomes.checkForBiomes(generator, MemorySegment.NULL, range, entry.getValue(), seed, filter, MemorySegment.NULL);
+                            if (hasBiome == 0) {
+                                // System.out.printf("skipping seed %d because it is missing biomes in %s\n", seed, entry.getKey().identifier());
+                                seed = 0;
+                                continue iterSeeds;
+                            }
+                        }
+                    }
 
-                        for (ResourceKey<DimensionType> dimension : dimensions.keySet()) {
-                            Set<Holder<Biome>> biomesForDimension = requiredBiomes.get(dimension);
-                            if (biomesForDimension.isEmpty())
-                                continue;
-                            var component = BingoExtras.translatable(
-                                    "bingo_extras.bingospreadplayers.seedfind_biomes",
-                                    mapSize,
-                                    StringUtil.capitalize(dimension.identifier().toShortLanguageKey().replace("the_", ""))
-                            ).withStyle(ChatFormatting.GOLD);
-                            for (Holder<Biome> someBiome : biomesForDimension) {
-                                component.append(BingoExtras.translatable(
-                                        "bingo_extras.bingospreadplayers.seedfind_biome",
-                                        StringUtil.capitalize(someBiome.unwrapKey().orElseThrow().identifier().toShortLanguageKey().replace("_", " "))
-                                ).withStyle(ChatFormatting.GOLD));
-                            }
-                            extraMessages.add(component);
+                    for (ResourceKey<DimensionType> dimension : dimensions.keySet()) {
+                        Set<Holder<Biome>> biomesForDimension = requiredBiomes.get(dimension);
+                        if (biomesForDimension.isEmpty())
+                            continue;
+                        var component = BingoExtras.translatable(
+                                "bingo_extras.bingospreadplayers.seedfind_biomes",
+                                mapSize,
+                                StringUtil.capitalize(dimension.identifier().toShortLanguageKey().replace("the_", ""))
+                        ).withStyle(ChatFormatting.GOLD);
+                        for (Holder<Biome> someBiome : biomesForDimension) {
+                            component.append(BingoExtras.translatable(
+                                    "bingo_extras.bingospreadplayers.seedfind_biome",
+                                    StringUtil.capitalize(someBiome.unwrapKey().orElseThrow().identifier().toShortLanguageKey().replace("_", " "))
+                            ).withStyle(ChatFormatting.GOLD));
                         }
+                        extraMessages.add(component);
                     }
                 }
             }
@@ -281,17 +297,38 @@ public class BingoSpreadPlayersSeedfindCommand {
         if (seed == 0)
             throw FAILED_TO_FIND_SEED_EXCEPTION.create();
         ((BingoGameExt) game).bingo_extras$getExtraMessages().addAll(extraMessages);
-        return seed;
+        return new SeedfinderResult(seed, spawnPositions);
     }
 
-    private static Vec2[] getGroupSpawnPositions(int nGroups, double distance) {
-        Vec2[] res = new Vec2[nGroups];
-        for (int i = 0; i < nGroups; i++) {
-            double x = Math.floor(distance * Math.cos(2 * Math.PI / nGroups * i)) + 0.5;
-            double z = Math.floor(distance * Math.sin(2 * Math.PI / nGroups * i)) + 0.5;
-            res[i] = new Vec2((float) x, (float) z);
+    private static class GroupSpawnPositionGenerator {
+        private final static int STEP_DISTANCE = 64;
+        final int nGroups;
+        final double distance;
+        int step = 0;
+
+        GroupSpawnPositionGenerator(int nGroups, double distance) {
+            this.nGroups = nGroups;
+            this.distance = distance;
         }
-        return res;
+
+        private double stepCount() {
+            return Math.floor((2 * Math.PI * distance) / STEP_DISTANCE / nGroups);
+        }
+
+        public boolean hasNext() {
+            return step < stepCount();
+        }
+
+        public Vec2[] getNext() {
+            Vec2[] res = new Vec2[nGroups];
+            for (int i = 0; i < nGroups; i++) {
+                double x = Math.floor(distance * Math.cos(2 * Math.PI / nGroups * (i + step / stepCount()))) + 0.5;
+                double z = Math.floor(distance * Math.sin(2 * Math.PI / nGroups * (i + step / stepCount()))) + 0.5;
+                res[i] = new Vec2((float) x, (float) z);
+            }
+            ++step;
+            return res;
+        }
     }
 
     private static void teleportPlayers(CommandSourceStack source, BingoGame activeGame, Vec2[] groupSpawns, List<List<Entity>> groups, ResourceKey<Level> dimension, double spread, RandomSource rand) {
