@@ -48,7 +48,6 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
@@ -192,7 +191,7 @@ public class BingoSpreadPlayersSeedfindCommand {
             RegistryAccess access
     ) throws CommandSyntaxException {
         long seed = 0;
-        int attempts = 2500;
+        int attempts = 1000;
         Vec2[] spawnPositions = null;
         List<Component> extraMessages = new ArrayList<>();
         try (Arena arena = Arena.ofConfined()) {
@@ -312,7 +311,7 @@ public class BingoSpreadPlayersSeedfindCommand {
         }
 
         private double stepCount() {
-            return Math.floor((2 * Math.PI * distance) / STEP_DISTANCE / nGroups);
+            return Math.max(1, Math.floor((2 * Math.PI * distance) / STEP_DISTANCE / nGroups));
         }
 
         public boolean hasNext() {
