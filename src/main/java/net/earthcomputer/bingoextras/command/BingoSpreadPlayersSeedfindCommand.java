@@ -34,6 +34,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.Permissions;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Tuple;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Relative;
@@ -48,6 +49,8 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
@@ -142,26 +145,41 @@ public class BingoSpreadPlayersSeedfindCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static Map<ResourceKey<DimensionType>, Set<Holder<Biome>>> getRequiredBiomes(RegistryAccess access, BingoGame game) {
+    private static Map<ResourceKey<DimensionType>, Tuple<Set<Holder<Biome>>, Set<List<Holder<Biome>>>>> getRequiredBiomes(RegistryAccess access, BingoGame game) {
         Map<ResourceKey<DimensionType>, Identifier> dimensionTags = Map.of(
                 BuiltinDimensionTypes.OVERWORLD, Identifier.withDefaultNamespace("is_overworld"),
                 BuiltinDimensionTypes.NETHER, Identifier.withDefaultNamespace("is_nether"),
                 BuiltinDimensionTypes.END, Identifier.withDefaultNamespace("is_end")
         );
-        Map<ResourceKey<DimensionType>, Set<Holder<Biome>>> requiredBiomes = Map.of(
-                BuiltinDimensionTypes.OVERWORLD, new HashSet<>(),
-                BuiltinDimensionTypes.NETHER, new HashSet<>(),
-                BuiltinDimensionTypes.END, new HashSet<>()
+        Map<ResourceKey<DimensionType>, Tuple<Set<Holder<Biome>>, Set<List<Holder<Biome>>>>> requiredBiomes = Map.of(
+                BuiltinDimensionTypes.OVERWORLD, new Tuple<>(new HashSet<>(), new HashSet<>()),
+                BuiltinDimensionTypes.NETHER, new Tuple<>(new HashSet<>(), new HashSet<>()),
+                BuiltinDimensionTypes.END, new Tuple<>(new HashSet<>(), new HashSet<>())
         );
         Registry<Biome> biomeRegistry = access.lookup(Registries.BIOME).orElseThrow();
         for (ActiveGoal activeGoal : game.getBoard().getGoals()) {
             GoalHolder goal = GoalManager.getGoal(activeGoal.id());
             for (Holder<BingoTag> goalTag : goal.goal().getTags()) {
-                Optional<Holder.Reference<Biome>> biome = biomeRegistry.get(Identifier.withDefaultNamespace(goalTag.unwrapKey().orElseThrow().identifier().getPath()));
-                if (biome.isPresent()) {
-                    for (Map.Entry<ResourceKey<DimensionType>, Identifier> dimensionTag : dimensionTags.entrySet()) {
-                        if (biome.get().tags().anyMatch(t -> t.location().equals(dimensionTag.getValue()))) {
-                            requiredBiomes.get(dimensionTag.getKey()).add(biome.get());
+                String tagName = goalTag.unwrapKey().orElseThrow().identifier().getPath();
+                if (tagName.startsWith("seedfind_biome_")) {
+                    Optional<Holder.Reference<Biome>> biome = biomeRegistry.get(Identifier.withDefaultNamespace(tagName.substring("seedfind_biome_".length())));
+                    if (biome.isPresent()) {
+                        for (Map.Entry<ResourceKey<DimensionType>, Identifier> dimensionTag : dimensionTags.entrySet()) {
+                            if (biome.get().tags().anyMatch(t -> t.location().equals(dimensionTag.getValue()))) {
+                                requiredBiomes.get(dimensionTag.getKey()).getA().add(biome.get());
+                            }
+                        }
+                    }
+                } else if (tagName.startsWith("seedfind_biometag_")) {
+                    var optionalTagKey = biomeRegistry.listTagIds().filter(t -> t.location().getPath().equals(tagName.substring("seedfind_biometag_".length()))).findAny();
+                    if (optionalTagKey.isPresent()) {
+                        List<Holder<Biome>> biomes = StreamSupport.stream(biomeRegistry.getTagOrEmpty(optionalTagKey.get()).spliterator(), false).toList();
+                        if (!biomes.isEmpty()) {
+                            for (Map.Entry<ResourceKey<DimensionType>, Identifier> dimensionTag : dimensionTags.entrySet()) {
+                                if (biomes.getFirst().tags().anyMatch(t -> t.location().equals(dimensionTag.getValue()))) {
+                                    requiredBiomes.get(dimensionTag.getKey()).getB().add(biomes);
+                                }
+                            }
                         }
                     }
                 }
@@ -207,7 +225,7 @@ public class BingoSpreadPlayersSeedfindCommand {
             Range.z(range, -rChunks);
             Range.y(range, 63);
             MemorySegment filter = BiomeFilter.allocate(arena);
-            final Map<ResourceKey<DimensionType>, Set<Holder<Biome>>> requiredBiomes = getRequiredBiomes(access, game);
+            final Map<ResourceKey<DimensionType>, Tuple<Set<Holder<Biome>>, Set<List<Holder<Biome>>>>> requiredBiomes = getRequiredBiomes(access, game);
             final Map<ResourceKey<DimensionType>, Integer> dimensions = Map.of(
                     BuiltinDimensionTypes.OVERWORLD, Cubiomes.DIM_OVERWORLD(),
                     BuiltinDimensionTypes.NETHER, Cubiomes.DIM_NETHER()
@@ -253,8 +271,9 @@ public class BingoSpreadPlayersSeedfindCommand {
                 }
                 // check if required biomes for all goals exist
                 if (mapSize > 0) {
+                    var biomeCache = Cubiomes.allocCache(generator, range);
                     for (Map.Entry<ResourceKey<DimensionType>, Integer> entry : dimensions.entrySet()) {
-                        Set<Holder<Biome>> biomesForDimension = requiredBiomes.get(entry.getKey());
+                        Set<Holder<Biome>> biomesForDimension = requiredBiomes.get(entry.getKey()).getA();
                         if (!biomesForDimension.isEmpty()) {
                             MemorySegment requiredBiomeIDs = arena.allocate(Cubiomes.C_INT, biomesForDimension.size());
                             long i = 0;
@@ -262,7 +281,22 @@ public class BingoSpreadPlayersSeedfindCommand {
                                 requiredBiomeIDs.set(Cubiomes.C_INT, i++ * Cubiomes.C_INT.byteSize(), CubiomesUtils.biomeToBiomeID(b));
                             }
                             Cubiomes.setupBiomeFilter(filter, CUBIOMES_MC_VERSION, 0, requiredBiomeIDs, biomesForDimension.size(), MemorySegment.NULL, 0, MemorySegment.NULL, 0);
-                            int hasBiome = Cubiomes.checkForBiomes(generator, MemorySegment.NULL, range, entry.getValue(), seed, filter, MemorySegment.NULL);
+                            int hasBiome = Cubiomes.checkForBiomes(generator, biomeCache, range, entry.getValue(), seed, filter, MemorySegment.NULL);
+                            if (hasBiome == 0) {
+                                // System.out.printf("skipping seed %d because it is missing biomes in %s\n", seed, entry.getKey().identifier());
+                                seed = 0;
+                                continue iterSeeds;
+                            }
+                        }
+                        Set<List<Holder<Biome>>> biomeTagsForDimension = requiredBiomes.get(entry.getKey()).getB();
+                        MemorySegment matchAnyBiomeIDs = arena.allocate(Cubiomes.C_INT, biomeTagsForDimension.stream().map(List::size).reduce(0, Integer::max));
+                        for (List<Holder<Biome>> matchAnyBiomes : biomeTagsForDimension) {
+                            long i = 0;
+                            for (var b : matchAnyBiomes) {
+                                matchAnyBiomeIDs.set(Cubiomes.C_INT, i++ * Cubiomes.C_INT.byteSize(), CubiomesUtils.biomeToBiomeID(b));
+                            }
+                            Cubiomes.setupBiomeFilter(filter, CUBIOMES_MC_VERSION, 0, MemorySegment.NULL, 0, MemorySegment.NULL, 0, matchAnyBiomeIDs, matchAnyBiomes.size());
+                            int hasBiome = Cubiomes.checkForBiomes(generator, biomeCache, range, entry.getValue(), seed, filter, MemorySegment.NULL);
                             if (hasBiome == 0) {
                                 // System.out.printf("skipping seed %d because it is missing biomes in %s\n", seed, entry.getKey().identifier());
                                 seed = 0;
@@ -272,18 +306,24 @@ public class BingoSpreadPlayersSeedfindCommand {
                     }
 
                     for (ResourceKey<DimensionType> dimension : dimensions.keySet()) {
-                        Set<Holder<Biome>> biomesForDimension = requiredBiomes.get(dimension);
-                        if (biomesForDimension.isEmpty())
+                        Tuple<Set<Holder<Biome>>, Set<List<Holder<Biome>>>> biomesForDimension = requiredBiomes.get(dimension);
+                        if (biomesForDimension.getA().isEmpty() && biomesForDimension.getB().isEmpty())
                             continue;
                         var component = BingoExtras.translatable(
                                 "bingo_extras.bingospreadplayers.seedfind_biomes",
                                 mapSize,
                                 StringUtil.capitalize(dimension.identifier().toShortLanguageKey().replace("the_", ""))
                         ).withStyle(ChatFormatting.GOLD);
-                        for (Holder<Biome> someBiome : biomesForDimension) {
+                        for (Holder<Biome> someBiome : biomesForDimension.getA()) {
                             component.append(BingoExtras.translatable(
                                     "bingo_extras.bingospreadplayers.seedfind_biome",
                                     StringUtil.capitalize(someBiome.unwrapKey().orElseThrow().identifier().toShortLanguageKey().replace("_", " "))
+                            ).withStyle(ChatFormatting.GOLD));
+                        }
+                        for (var someBiomes : biomesForDimension.getB()) {
+                            component.append(BingoExtras.translatable(
+                                    "bingo_extras.bingospreadplayers.seedfind_biome",
+                                    someBiomes.stream().map(b -> StringUtil.capitalize(b.unwrapKey().orElseThrow().identifier().toShortLanguageKey().replace("_", " "))).collect(Collectors.joining(" / "))
                             ).withStyle(ChatFormatting.GOLD));
                         }
                         extraMessages.add(component);
