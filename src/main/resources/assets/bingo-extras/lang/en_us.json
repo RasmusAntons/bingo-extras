@@ -6,6 +6,8 @@
   "bingo_extras.bingospreadplayers.noRunningGame": "No running game",
   "bingo_extras.bingospreadplayers.seedfind_biome": "\n  - %s",
   "bingo_extras.bingospreadplayers.seedfind_biomes": "These biomes are within %d blocks from 0 0 in the %s:",
+  "bingo_extras.bingospreadplayers.seedfind_biomes_tooltip": "Checked within a square around 0 0, so the distance can be up to sqrt(2) times higher.",
+  "bingo_extras.bingospreadplayers.seedfind_biometag": "\n  - #%s",
   "bingo_extras.bingospreadplayers.success": "Successfully spread players",
   "bingo_extras.cancel_freeze.success": "Freeze period canceled",
   "bingo_extras.clearspawnpoint.success": "Cleared your spawn point",
